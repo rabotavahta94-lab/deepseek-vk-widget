@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeepSeek VK Widget</title>
+    <title>DeepSeek AI Assistant</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <style>
@@ -15,7 +15,7 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4A76A8 0%, #2A5885 100%);
             min-height: 100vh;
             padding: 20px;
             display: flex;
@@ -28,8 +28,8 @@
             width: 100%;
             margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             overflow: hidden;
             height: 600px;
             display: flex;
@@ -37,52 +37,53 @@
         }
         
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #4A76A8;
             color: white;
-            padding: 20px;
+            padding: 16px;
             text-align: center;
             position: relative;
         }
         
         .header h1 {
-            font-size: 1.3em;
-            margin-bottom: 5px;
+            font-size: 18px;
+            margin-bottom: 4px;
             font-weight: 500;
         }
         
         .status {
-            font-size: 0.9em;
+            font-size: 13px;
             opacity: 0.9;
         }
         
         .online-dot {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 10px;
-            height: 10px;
+            top: 16px;
+            right: 16px;
+            width: 8px;
+            height: 8px;
             background: #4CAF50;
             border-radius: 50%;
-            animation: pulse 2s infinite;
         }
         
         .chat-container {
             flex: 1;
-            padding: 16px;
+            padding: 12px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            background: #f8f9fa;
+            gap: 8px;
+            background: #EDEEF0;
         }
         
         .message {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 18px;
+            max-width: 85%;
+            padding: 10px 12px;
+            border-radius: 12px;
             line-height: 1.4;
+            font-size: 14px;
             animation: fadeIn 0.3s ease;
             position: relative;
+            word-wrap: break-word;
         }
         
         .user-message {
@@ -94,8 +95,8 @@
         .bot-message {
             align-self: flex-start;
             background: white;
-            border: 1px solid #e0e0e0;
             border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         
         .message-time {
@@ -106,26 +107,27 @@
         }
         
         .input-container {
-            padding: 16px;
-            border-top: 1px solid #e0e0e0;
+            padding: 12px;
+            border-top: 1px solid #E1E3E6;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             background: white;
         }
         
         .message-input {
             flex: 1;
-            padding: 12px 16px;
-            border: 1px solid #e0e0e0;
+            padding: 10px 14px;
+            border: 1px solid #E1E3E6;
             border-radius: 20px;
             outline: none;
             font-size: 14px;
+            background: #F2F3F5;
             transition: all 0.3s ease;
         }
         
         .message-input:focus {
             border-color: #4A76A8;
-            box-shadow: 0 0 0 2px rgba(74, 118, 168, 0.1);
+            background: white;
         }
         
         .send-button {
@@ -133,18 +135,18 @@
             color: white;
             border: none;
             border-radius: 50%;
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
             transition: all 0.3s ease;
+            flex-shrink: 0;
         }
         
         .send-button:hover {
             background: #5B88BD;
-            transform: scale(1.05);
         }
         
         .send-button:active {
@@ -152,7 +154,7 @@
         }
         
         .send-button:disabled {
-            background: #b0b0b0;
+            background: #A0B0C0;
             cursor: not-allowed;
             transform: none;
         }
@@ -161,20 +163,20 @@
             display: flex;
             align-self: flex-start;
             background: white;
-            border: 1px solid #e0e0e0;
-            padding: 12px 16px;
-            border-radius: 18px;
+            padding: 10px 12px;
+            border-radius: 12px;
             border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         
         .typing-dots {
             display: flex;
-            gap: 4px;
+            gap: 3px;
         }
         
         .typing-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: #999;
             animation: typing 1.4s infinite ease-in-out;
@@ -200,22 +202,27 @@
                 opacity: 0.4;
             }
             30% { 
-                transform: translateY(-5px); 
+                transform: translateY(-3px); 
                 opacity: 1;
             }
         }
         
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        
         .welcome-message {
             text-align: center;
-            color: #666;
-            font-size: 14px;
-            margin: 10px 0;
+            color: #626D7A;
+            font-size: 12px;
+            margin: 8px 0;
+            padding: 4px;
+        }
+        
+        .api-status {
+            text-align: center;
+            font-size: 11px;
+            color: #FF6B6B;
+            padding: 4px;
+            background: #FFF3F3;
+            border-radius: 4px;
+            margin: 4px 12px;
         }
         
         @media (max-width: 480px) {
@@ -230,7 +237,7 @@
             }
             
             .message {
-                max-width: 85%;
+                max-width: 90%;
             }
         }
     </style>
@@ -251,10 +258,14 @@
             </div>
         </div>
         
+        <div id="apiStatus" class="api-status" style="display: none;">
+            ⚠️ API временно недоступно. Используется демо-режим.
+        </div>
+        
         <div class="input-container">
             <input type="text" class="message-input" id="messageInput" placeholder="Введите ваш вопрос..." autocomplete="off">
             <button class="send-button" id="sendButton">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="white"/>
                 </svg>
             </button>
@@ -266,11 +277,34 @@
             const chatMessages = document.getElementById('chatMessages');
             const messageInput = document.getElementById('messageInput');
             const sendButton = document.getElementById('sendButton');
+            const apiStatus = document.getElementById('apiStatus');
+            
+            let apiAvailable = true;
             
             // Инициализация VK Bridge
             if (typeof vkBridge !== 'undefined') {
                 vkBridge.send('VKWebAppInit').catch(console.error);
             }
+            
+            // Проверка доступности API
+            async function checkApiAvailability() {
+                try {
+                    const response = await fetch('/api/ask', {
+                        method: 'OPTIONS'
+                    });
+                    apiAvailable = response.ok;
+                } catch (error) {
+                    console.log('API недоступно, используется демо-режим');
+                    apiAvailable = false;
+                }
+                
+                if (!apiAvailable) {
+                    apiStatus.style.display = 'block';
+                }
+            }
+            
+            // Проверяем доступность API при загрузке
+            checkApiAvailability();
             
             function addMessage(text, isUser) {
                 const messageDiv = document.createElement('div');
@@ -318,6 +352,29 @@
                 }
             }
             
+            // Генератор демо-ответов
+            function generateDemoAnswer(question) {
+                const answers = [
+                    `На вопрос "${question}" я могу ответить, что это интересная тема для обсуждения. В реальных условиях DeepSeek AI предоставит более детальный ответ.`,
+                    `Спасибо за ваш вопрос! По теме "${question}" можно рассказать много полезной информации.`,
+                    `Отличный вопрос! "${question}" - это важная тема, которая заслуживает внимательного рассмотрения.`,
+                    `Я проанализировал ваш запрос о "${question}". В рабочей версии DeepSeek AI даст развернутый ответ.`,
+                    `По вопросу "${question}" у меня есть несколько мыслей. В реальной реализации ответ будет более точным и полезным.`
+                ];
+                
+                const thinkingProcesses = [
+                    "Анализирую ваш запрос...",
+                    "Ищу наиболее подходящий ответ...", 
+                    "Обрабатываю информацию...",
+                    "Формирую содержательный ответ..."
+                ];
+                
+                return {
+                    answer: answers[Math.floor(Math.random() * answers.length)],
+                    thinking: thinkingProcesses[Math.floor(Math.random() * thinkingProcesses.length)]
+                };
+            }
+            
             async function sendMessage() {
                 const message = messageInput.value.trim();
                 
@@ -336,48 +393,54 @@
                 sendButton.disabled = true;
                 
                 try {
-                    // Отправляем запрос к API
-                    const response = await fetch('/api/ask', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ 
-                            question: message,
-                            timestamp: new Date().toISOString()
-                        })
-                    });
+                    let responseData;
                     
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                    if (apiAvailable) {
+                        // Пытаемся отправить запрос к API
+                        const response = await fetch('/api/ask', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ 
+                                question: message,
+                                timestamp: new Date().toISOString()
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            responseData = await response.json();
+                        } else {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                    } else {
+                        // Используем демо-режим
+                        await new Promise(resolve => setTimeout(resolve, 1500));
+                        const demoResponse = generateDemoAnswer(message);
+                        responseData = { answer: demoResponse.answer };
                     }
                     
-                    const data = await response.json();
                     removeTypingIndicator();
                     
-                    if (data.error) {
-                        addMessage(`❌ Ошибка: ${data.error}`, false);
+                    if (responseData.error) {
+                        addMessage(`❌ Ошибка: ${responseData.error}`, false);
                     } else {
-                        addMessage(data.answer || '🤖 Я обработал ваш запрос.', false);
+                        addMessage(responseData.answer, false);
                     }
                     
                 } catch (error) {
                     console.error('Error:', error);
                     removeTypingIndicator();
                     
-                    // Заглушка для демонстрации, если API недоступно
-                    const demoAnswers = [
-                        "🤖 На основе вашего вопроса я могу сказать, что это интересная тема для обсуждения.",
-                        "💡 Я проанализировал ваш запрос и готов предоставить подробный ответ.",
-                        "🔍 Это хороший вопрос! Давайте разберем его подробнее...",
-                        "📚 По этой теме есть много интересной информации, которую я могу вам рассказать.",
-                        "🌟 Отличный вопрос! Я подготовил для вас развернутый ответ."
-                    ];
+                    // Всегда используем демо-режим при ошибках
+                    const demoResponse = generateDemoAnswer(message);
+                    addMessage(demoResponse.answer, false);
                     
-                    const randomAnswer = demoAnswers[Math.floor(Math.random() * demoAnswers.length)];
-                    const fullAnswer = `${randomAnswer}\n\n*Примечание: В реальной версии здесь будет ответ от DeepSeek API*`;
-                    
-                    addMessage(fullAnswer, false);
+                    // Показываем статус, если API стало недоступно
+                    if (apiAvailable) {
+                        apiAvailable = false;
+                        apiStatus.style.display = 'block';
+                    }
                     
                 } finally {
                     sendButton.disabled = false;
@@ -397,11 +460,6 @@
             
             // Автофокус на поле ввода
             messageInput.focus();
-            
-            // Анимация появления
-            setTimeout(() => {
-                document.querySelector('.container').style.opacity = '1';
-            }, 100);
         });
     </script>
 </body>
