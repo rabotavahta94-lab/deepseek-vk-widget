@@ -185,6 +185,27 @@
         .typing-dot:nth-child(1) { animation-delay: -0.32s; }
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         
+        .api-status {
+            text-align: center;
+            font-size: 11px;
+            color: #FF6B6B;
+            padding: 4px;
+            background: #FFF3F3;
+            border-radius: 4px;
+            margin: 4px 12px;
+            display: none;
+        }
+        
+        .token-info {
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            padding: 4px;
+            background: #F0F0F0;
+            border-radius: 4px;
+            margin: 4px 12px;
+        }
+        
         @keyframes fadeIn {
             from { 
                 opacity: 0; 
@@ -215,16 +236,6 @@
             padding: 4px;
         }
         
-        .api-status {
-            text-align: center;
-            font-size: 11px;
-            color: #FF6B6B;
-            padding: 4px;
-            background: #FFF3F3;
-            border-radius: 4px;
-            margin: 4px 12px;
-        }
-        
         @media (max-width: 480px) {
             body {
                 padding: 0;
@@ -253,13 +264,17 @@
         <div class="chat-container" id="chatMessages">
             <div class="welcome-message">Сегодня</div>
             <div class="message bot-message">
-                👋 Привет! Я DeepSeek AI. Задавайте вопросы, и я постараюсь помочь вам наилучшим образом.
+                👋 Привет! Я DeepSeek AI Assistant. Задавайте вопросы, и я постараюсь помочь вам наилучшим образом.
                 <div class="message-time">только что</div>
             </div>
         </div>
         
-        <div id="apiStatus" class="api-status" style="display: none;">
-            ⚠️ API временно недоступно. Используется демо-режим.
+        <div id="apiStatus" class="api-status">
+            ⚠️ Ошибка подключения к API
+        </div>
+        
+        <div class="token-info" id="tokenInfo">
+            🔄 Используется реальное DeepSeek API
         </div>
         
         <div class="input-container">
@@ -278,33 +293,12 @@
             const messageInput = document.getElementById('messageInput');
             const sendButton = document.getElementById('sendButton');
             const apiStatus = document.getElementById('apiStatus');
-            
-            let apiAvailable = true;
+            const tokenInfo = document.getElementById('tokenInfo');
             
             // Инициализация VK Bridge
             if (typeof vkBridge !== 'undefined') {
                 vkBridge.send('VKWebAppInit').catch(console.error);
             }
-            
-            // Проверка доступности API
-            async function checkApiAvailability() {
-                try {
-                    const response = await fetch('/api/ask', {
-                        method: 'OPTIONS'
-                    });
-                    apiAvailable = response.ok;
-                } catch (error) {
-                    console.log('API недоступно, используется демо-режим');
-                    apiAvailable = false;
-                }
-                
-                if (!apiAvailable) {
-                    apiStatus.style.display = 'block';
-                }
-            }
-            
-            // Проверяем доступность API при загрузке
-            checkApiAvailability();
             
             function addMessage(text, isUser) {
                 const messageDiv = document.createElement('div');
@@ -352,29 +346,6 @@
                 }
             }
             
-            // Генератор демо-ответов
-            function generateDemoAnswer(question) {
-                const answers = [
-                    `На вопрос "${question}" я могу ответить, что это интересная тема для обсуждения. В реальных условиях DeepSeek AI предоставит более детальный ответ.`,
-                    `Спасибо за ваш вопрос! По теме "${question}" можно рассказать много полезной информации.`,
-                    `Отличный вопрос! "${question}" - это важная тема, которая заслуживает внимательного рассмотрения.`,
-                    `Я проанализировал ваш запрос о "${question}". В рабочей версии DeepSeek AI даст развернутый ответ.`,
-                    `По вопросу "${question}" у меня есть несколько мыслей. В реальной реализации ответ будет более точным и полезным.`
-                ];
-                
-                const thinkingProcesses = [
-                    "Анализирую ваш запрос...",
-                    "Ищу наиболее подходящий ответ...", 
-                    "Обрабатываю информацию...",
-                    "Формирую содержательный ответ..."
-                ];
-                
-                return {
-                    answer: answers[Math.floor(Math.random() * answers.length)],
-                    thinking: thinkingProcesses[Math.floor(Math.random() * thinkingProcesses.length)]
-                };
-            }
-            
             async function sendMessage() {
                 const message = messageInput.value.trim();
                 
@@ -391,56 +362,44 @@
                 
                 // Отключаем кнопку отправки
                 sendButton.disabled = true;
+                apiStatus.style.display = 'none';
                 
                 try {
-                    let responseData;
+                    // Отправляем запрос к нашему API
+                    const response = await fetch('/api/ask', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            question: message,
+                            timestamp: new Date().toISOString()
+                        })
+                    });
                     
-                    if (apiAvailable) {
-                        // Пытаемся отправить запрос к API
-                        const response = await fetch('/api/ask', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ 
-                                question: message,
-                                timestamp: new Date().toISOString()
-                            })
-                        });
-                        
-                        if (response.ok) {
-                            responseData = await response.json();
-                        } else {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                    } else {
-                        // Используем демо-режим
-                        await new Promise(resolve => setTimeout(resolve, 1500));
-                        const demoResponse = generateDemoAnswer(message);
-                        responseData = { answer: demoResponse.answer };
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
                     }
                     
+                    const data = await response.json();
                     removeTypingIndicator();
                     
-                    if (responseData.error) {
-                        addMessage(`❌ Ошибка: ${responseData.error}`, false);
+                    if (data.error) {
+                        addMessage(`❌ Ошибка: ${data.error}`, false);
+                        apiStatus.style.display = 'block';
+                        apiStatus.textContent = `⚠️ ${data.error}`;
                     } else {
-                        addMessage(responseData.answer, false);
+                        addMessage(data.answer, false);
                     }
                     
                 } catch (error) {
                     console.error('Error:', error);
                     removeTypingIndicator();
                     
-                    // Всегда используем демо-режим при ошибках
-                    const demoResponse = generateDemoAnswer(message);
-                    addMessage(demoResponse.answer, false);
-                    
-                    // Показываем статус, если API стало недоступно
-                    if (apiAvailable) {
-                        apiAvailable = false;
-                        apiStatus.style.display = 'block';
-                    }
+                    addMessage(`❌ Произошла ошибка при обработке запроса: ${error.message}`, false);
+                    apiStatus.style.display = 'block';
+                    apiStatus.textContent = '⚠️ Ошибка подключения к API';
                     
                 } finally {
                     sendButton.disabled = false;
