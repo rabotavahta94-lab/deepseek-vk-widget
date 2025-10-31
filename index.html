@@ -4,110 +4,179 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeepSeek AI Assistant</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
+        
         .container {
             max-width: 400px;
+            width: 100%;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             overflow: hidden;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
         }
+        
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 20px;
             text-align: center;
         }
+        
         .header h1 {
-            font-size: 1.5em;
+            font-size: 1.3em;
             margin-bottom: 5px;
         }
+        
         .status {
             font-size: 0.9em;
             opacity: 0.9;
         }
+        
         .chat-container {
-            height: 500px;
+            flex: 1;
+            padding: 16px;
             overflow-y: auto;
-            padding: 20px;
-            background: #f8f9fa;
-        }
-        .message {
-            margin-bottom: 15px;
             display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
-        .user-message {
-            justify-content: flex-end;
-        }
-        .bot-message {
-            justify-content: flex-start;
-        }
-        .message-bubble {
+        
+        .message {
             max-width: 80%;
             padding: 12px 16px;
             border-radius: 18px;
-            font-size: 0.95em;
             line-height: 1.4;
+            animation: fadeIn 0.3s ease;
         }
-        .user-message .message-bubble {
-            background: #007bff;
-            color: white;
-            border-bottom-right-radius: 5px;
+        
+        .user-message {
+            align-self: flex-end;
+            background: #EBF0F7;
+            border-bottom-right-radius: 4px;
         }
-        .bot-message .message-bubble {
-            background: white;
-            color: #333;
-            border: 1px solid #e0e0e0;
-            border-bottom-left-radius: 5px;
+        
+        .bot-message {
+            align-self: flex-start;
+            background: #F5F5F5;
+            border-bottom-left-radius: 4px;
         }
+        
+        .message-time {
+            font-size: 11px;
+            opacity: 0.6;
+            margin-top: 4px;
+            text-align: right;
+        }
+        
         .input-container {
-            padding: 20px;
-            background: white;
-            border-top: 1px solid #e0e0e0;
+            padding: 16px;
+            border-top: 1px solid #EDEEF0;
             display: flex;
             gap: 10px;
         }
-        #user-input {
+        
+        .message-input {
             flex: 1;
             padding: 12px 16px;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            font-size: 1em;
+            border: 1px solid #EDEEF0;
+            border-radius: 20px;
             outline: none;
+            font-size: 14px;
         }
-        #user-input:focus {
-            border-color: #007bff;
+        
+        .message-input:focus {
+            border-color: #5B88BD;
         }
-        button {
-            background: #007bff;
+        
+        .send-button {
+            background: #4A76A8;
             color: white;
             border: none;
-            border-radius: 25px;
-            padding: 12px 20px;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             cursor: pointer;
-            font-size: 1em;
+            transition: background 0.2s;
         }
-        button:hover {
-            background: #0056b3;
+        
+        .send-button:hover {
+            background: #5B88BD;
         }
-        button:disabled {
-            background: #ccc;
+        
+        .send-button:disabled {
+            background: #626D7A;
             cursor: not-allowed;
         }
+        
         .typing-indicator {
-            display: none;
-            padding: 10px 16px;
-            color: #666;
-            font-style: italic;
+            display: flex;
+            align-self: flex-start;
+            background: #F5F5F5;
+            padding: 12px 16px;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #626D7A;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 0;
+            }
+            
+            .container {
+                height: 100vh;
+                max-width: 100%;
+                border-radius: 0;
+            }
         }
     </style>
 </head>
@@ -115,151 +184,134 @@
     <div class="container">
         <div class="header">
             <h1>DeepSeek AI Assistant</h1>
-            <div class="status" id="status">🔴 Проверка подключения...</div>
+            <div class="status">Готов помочь</div>
         </div>
         
-        <div class="chat-container" id="chat-container">
+        <div class="chat-container" id="chatMessages">
             <div class="message bot-message">
-                <div class="message-bubble">
-                    Добро пожаловать! Я ваш AI-помощник. Готов ответить на ваши вопросы.
-                </div>
-            </div>
-            <div class="typing-indicator" id="typing-indicator">
-                DeepSeek печатает...
+                Привет! Я DeepSeek AI. Задавайте вопросы, и я постараюсь помочь.
+                <div class="message-time">только что</div>
             </div>
         </div>
         
         <div class="input-container">
-            <input type="text" id="user-input" placeholder="Введите ваш вопрос...">
-            <button onclick="sendMessage()" id="send-btn">Отправить</button>
+            <input type="text" class="message-input" id="messageInput" placeholder="Введите ваш вопрос...">
+            <button class="send-button" id="sendButton">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="white"/>
+                </svg>
+            </button>
         </div>
     </div>
 
     <script>
-        let messageHistory = [];
-        
-        // Проверка подключения к прокси
-        async function checkProxy() {
-            const statusElement = document.getElementById('status');
-            try {
-                statusElement.textContent = '🟡 Проверка подключения...';
-                
-                const response = await fetch('/api/deepseek', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        messages: [{ role: 'user', content: 'test' }],
-                        stream: false
-                    })
-                });
-                
-                if (response.status === 200) {
-                    statusElement.textContent = '🟢 DeepSeek API: Подключено';
-                    statusElement.style.color = 'white';
-                } else {
-                    statusElement.textContent = '🔴 Ошибка подключения';
-                    statusElement.style.color = '#ff6b6b';
-                }
-            } catch (error) {
-                statusElement.textContent = '🔴 Ошибка сети';
-                statusElement.style.color = '#ff6b6b';
-                console.error('Proxy check failed:', error);
-            }
-        }
-        
-        // Отправка сообщения
-        async function sendMessage() {
-            const userInput = document.getElementById('user-input');
-            const chatContainer = document.getElementById('chat-container');
-            const sendBtn = document.getElementById('send-btn');
-            const typingIndicator = document.getElementById('typing-indicator');
-            
-            const message = userInput.value.trim();
-            if (!message) return;
-            
-            // Добавляем сообщение пользователя
-            const userMessageDiv = document.createElement('div');
-            userMessageDiv.className = 'message user-message';
-            userMessageDiv.innerHTML = `<div class="message-bubble">${message}</div>`;
-            chatContainer.appendChild(userMessageDiv);
-            
-            // Очищаем input и блокируем кнопку
-            userInput.value = '';
-            sendBtn.disabled = true;
-            
-            // Показываем индикатор набора
-            typingIndicator.style.display = 'block';
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            
-            try {
-                // Добавляем сообщение в историю
-                messageHistory.push({ role: 'user', content: message });
-                
-                const response = await fetch('/api/deepseek', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        messages: messageHistory,
-                        stream: false
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                // Добавляем ответ бота
-                const botMessage = data.choices[0].message.content;
-                const botMessageDiv = document.createElement('div');
-                botMessageDiv.className = 'message bot-message';
-                botMessageDiv.innerHTML = `<div class="message-bubble">${botMessage}</div>`;
-                
-                // Скрываем индикатор и добавляем сообщение
-                typingIndicator.style.display = 'none';
-                chatContainer.appendChild(botMessageDiv);
-                
-                // Обновляем историю
-                messageHistory.push({ role: 'assistant', content: botMessage });
-                
-                // Ограничиваем историю последними 10 сообщениями
-                if (messageHistory.length > 10) {
-                    messageHistory = messageHistory.slice(-10);
-                }
-                
-            } catch (error) {
-                // Скрываем индикатор и показываем ошибку
-                typingIndicator.style.display = 'none';
-                
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'message bot-message';
-                errorDiv.innerHTML = `<div class="message-bubble" style="color: #e74c3c;">Ошибка: Не удалось получить ответ. Проверьте подключение к API.</div>`;
-                chatContainer.appendChild(errorDiv);
-                
-                console.error('Error:', error);
-            }
-            
-            // Разблокируем кнопку и скроллим вниз
-            sendBtn.disabled = false;
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            userInput.focus();
-        }
-        
-        // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
-            checkProxy();
+            const chatMessages = document.getElementById('chatMessages');
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
             
-            const messageInput = document.getElementById('user-input');
+            // Инициализация VK Bridge
+            if (typeof vkBridge !== 'undefined') {
+                vkBridge.send('VKWebAppInit');
+            }
+            
+            function addMessage(text, isUser) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+                
+                const time = new Date();
+                const timeString = time.toLocaleTimeString('ru-RU', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                messageDiv.innerHTML = `
+                    ${text}
+                    <div class="message-time">${timeString}</div>
+                `;
+                
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                return messageDiv;
+            }
+            
+            function showTypingIndicator() {
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'typing-indicator';
+                typingDiv.id = 'typingIndicator';
+                typingDiv.innerHTML = `
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                `;
+                
+                chatMessages.appendChild(typingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                return typingDiv;
+            }
+            
+            function removeTypingIndicator() {
+                const indicator = document.getElementById('typingIndicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            }
+            
+            async function sendMessage() {
+                const message = messageInput.value.trim();
+                
+                if (!message) return;
+                
+                messageInput.value = '';
+                addMessage(message, true);
+                showTypingIndicator();
+                sendButton.disabled = true;
+                
+                try {
+                    const response = await fetch('/api/ask', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ question: message })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    removeTypingIndicator();
+                    
+                    if (data.error) {
+                        addMessage(`Ошибка: ${data.error}`, false);
+                    } else {
+                        addMessage(data.answer || 'Ответ получен', false);
+                    }
+                    
+                } catch (error) {
+                    removeTypingIndicator();
+                    console.error('Error:', error);
+                    addMessage('Извините, произошла ошибка при обработке запроса. Попробуйте еще раз.', false);
+                } finally {
+                    sendButton.disabled = false;
+                    messageInput.focus();
+                }
+            }
+            
+            sendButton.addEventListener('click', sendMessage);
+            
             messageInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     sendMessage();
                 }
             });
+            
+            messageInput.focus();
         });
     </script>
 </body>
