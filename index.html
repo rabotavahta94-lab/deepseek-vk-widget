@@ -6,11 +6,7 @@
     <title>DeepSeek AI Assistant</title>
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -34,10 +30,6 @@
         .header h1 {
             font-size: 1.5em;
             margin-bottom: 5px;
-        }
-        .header p {
-            opacity: 0.9;
-            font-size: 0.9em;
         }
         .chat-container {
             height: 400px;
@@ -78,9 +70,6 @@
             outline: none;
             font-size: 14px;
         }
-        .message-input:focus {
-            border-color: #667eea;
-        }
         .send-button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -90,22 +79,22 @@
             cursor: pointer;
             font-weight: 600;
         }
-        .send-button:hover {
-            opacity: 0.9;
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         .typing-indicator {
             padding: 12px 16px;
             color: #666;
             font-style: italic;
         }
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 10px;
+        .api-status {
             text-align: center;
-            margin: 10px;
+            padding: 10px;
+            font-size: 0.8em;
         }
+        .connected { color: #4caf50; }
+        .disconnected { color: #f44336; }
     </style>
 </head>
 <body>
@@ -114,6 +103,7 @@
             <div class="header">
                 <h1>🤖 DeepSeek AI Assistant</h1>
                 <p>Ваш интеллектуальный помощник</p>
+                <div id="apiStatus" class="api-status">🔄 Проверка подключения...</div>
             </div>
             
             <div id="chat" class="chat-container">
@@ -124,50 +114,80 @@
             
             <div class="input-area">
                 <input type="text" id="messageInput" class="message-input" 
-                       placeholder="Введите ваш вопрос..." maxlength="500">
-                <button onclick="sendMessage()" class="send-button">Отправить</button>
+                       placeholder="Введите ваш вопрос..." maxlength="1000">
+                <button onclick="sendMessage()" id="sendButton" class="send-button">Отправить</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Инициализация VK Bridge
-        async function initializeApp() {
+        const chat = document.getElementById('chat');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const apiStatus = document.getElementById('apiStatus');
+
+        // Проверка подключения к прокси
+        async function checkProxy() {
             try {
-                // Проверяем, находимся ли мы в VK Mini Apps
-                if (typeof vkBridge !== 'undefined') {
-                    await vkBridge.send('VKWebAppInit', {});
-                    console.log('VK Mini App initialized successfully');
-                    
-                    // Получаем информацию о пользователе
-                    const userInfo = await vkBridge.send('VKWebAppGetUserInfo', {});
-                    console.log('User info:', userInfo);
-                    
-                    // Показываем приложение
-                    document.getElementById('app').style.display = 'block';
+                const response = await fetch('/api/deepseek', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: 'test' })
+                });
+                
+                if (response.ok) {
+                    apiStatus.textContent = '🟢 DeepSeek API: Подключено';
+                    apiStatus.className = 'api-status connected';
                 } else {
-                    // Если не в VK, все равно показываем приложение
-                    console.log('Running outside VK');
-                    document.getElementById('app').style.display = 'block';
+                    apiStatus.textContent = '🔴 Ошибка подключения';
+                    apiStatus.className = 'api-status disconnected';
                 }
             } catch (error) {
-                console.error('Initialization error:', error);
-                // Показываем приложение даже при ошибке
-                document.getElementById('app').style.display = 'block';
-                
-                // Добавляем сообщение об ошибке в чат
-                const chat = document.getElementById('chat');
-                chat.innerHTML += `
-                    <div class="error-message">
-                        Приложение запущено в демо-режиме. В VK должно работать автоматически.
-                    </div>
-                `;
+                apiStatus.textContent = '🔴 Прокси недоступен';
+                apiStatus.className = 'api-status disconnected';
             }
         }
 
-        // Функции чата
-        const chat = document.getElementById('chat');
-        const messageInput = document.getElementById('messageInput');
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            sendButton.disabled = true;
+            addMessage(message, true);
+            messageInput.value = '';
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.textContent = 'DeepSeek печатает...';
+            chat.appendChild(typingDiv);
+            chat.scrollTop = chat.scrollHeight;
+
+            try {
+                const response = await fetch('/api/deepseek', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API error: ' + response.status);
+                }
+
+                const data = await response.json();
+                typingDiv.remove();
+
+                if (data.success) {
+                    addMessage(data.response);
+                } else {
+                    addMessage('Ошибка: ' + data.error);
+                }
+            } catch (error) {
+                typingDiv.remove();
+                addMessage('❌ Ошибка соединения с AI');
+            } finally {
+                sendButton.disabled = false;
+            }
+        }
 
         function addMessage(text, isUser = false) {
             const messageDiv = document.createElement('div');
@@ -177,61 +197,13 @@
             chat.scrollTop = chat.scrollHeight;
         }
 
-        function showTyping() {
-            const typingDiv = document.createElement('div');
-            typingDiv.id = 'typing';
-            typingDiv.className = 'typing-indicator';
-            typingDiv.textContent = 'AI печатает...';
-            chat.appendChild(typingDiv);
-            chat.scrollTop = chat.scrollHeight;
-        }
-
-        function hideTyping() {
-            const typing = document.getElementById('typing');
-            if (typing) typing.remove();
-        }
-
-        async function sendMessage() {
-            const message = messageInput.value.trim();
-            if (!message) return;
-
-            addMessage(message, true);
-            messageInput.value = '';
-            
-            showTyping();
-
-            try {
-                // Имитация ответа AI (замените на реальный DeepSeek API)
-                setTimeout(() => {
-                    hideTyping();
-                    const responses = [
-                        "Это демо-версия виджета. Для полной функциональности подключите DeepSeek API.",
-                        "Я AI-помощник! В реальной версии я буду отвечать на ваши вопросы с помощью DeepSeek.",
-                        "Привет! Это тестовая версия чата. Настройте интеграцию с DeepSeek для умных ответов."
-                    ];
-                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                    addMessage(randomResponse);
-                }, 1000);
-
-            } catch (error) {
-                hideTyping();
-                addMessage("Извините, произошла ошибка. Попробуйте еще раз.");
-                console.error('Error:', error);
-            }
-        }
-
-        // Инициализация при загрузке
+        // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
-            initializeApp();
-            
-            // Отправка по Enter
+            checkProxy();
             messageInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') sendMessage();
             });
-
-            // Фокус на поле ввода
-            messageInput.focus();
         });
     </script>
 </body>
-</html>.
+</html>
