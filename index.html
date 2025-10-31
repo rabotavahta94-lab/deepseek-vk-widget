@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeepSeek AI Assistant</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
-    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -14,7 +13,7 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #4A76A8 0%, #2A5885 100%);
             min-height: 100vh;
             padding: 20px;
@@ -26,7 +25,6 @@
         .container {
             max-width: 400px;
             width: 100%;
-            margin: 0 auto;
             background: white;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
@@ -41,28 +39,16 @@
             color: white;
             padding: 16px;
             text-align: center;
-            position: relative;
         }
         
         .header h1 {
             font-size: 18px;
             margin-bottom: 4px;
-            font-weight: 500;
         }
         
         .status {
             font-size: 13px;
             opacity: 0.9;
-        }
-        
-        .online-dot {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            width: 8px;
-            height: 8px;
-            background: #4CAF50;
-            border-radius: 50%;
         }
         
         .chat-container {
@@ -82,21 +68,16 @@
             line-height: 1.4;
             font-size: 14px;
             animation: fadeIn 0.3s ease;
-            position: relative;
-            word-wrap: break-word;
         }
         
         .user-message {
             align-self: flex-end;
             background: #EBF0F7;
-            border-bottom-right-radius: 4px;
         }
         
         .bot-message {
             align-self: flex-start;
             background: white;
-            border-bottom-left-radius: 4px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         
         .message-time {
@@ -119,15 +100,8 @@
             padding: 10px 14px;
             border: 1px solid #E1E3E6;
             border-radius: 20px;
-            outline: none;
             font-size: 14px;
             background: #F2F3F5;
-            transition: all 0.3s ease;
-        }
-        
-        .message-input:focus {
-            border-color: #4A76A8;
-            background: white;
         }
         
         .send-button {
@@ -141,22 +115,6 @@
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
-        }
-        
-        .send-button:hover {
-            background: #5B88BD;
-        }
-        
-        .send-button:active {
-            transform: scale(0.95);
-        }
-        
-        .send-button:disabled {
-            background: #A0B0C0;
-            cursor: not-allowed;
-            transform: none;
         }
         
         .typing-indicator {
@@ -165,8 +123,6 @@
             background: white;
             padding: 10px 12px;
             border-radius: 12px;
-            border-bottom-left-radius: 4px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         
         .typing-dots {
@@ -185,81 +141,14 @@
         .typing-dot:nth-child(1) { animation-delay: -0.32s; }
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         
-        .api-status {
-            text-align: center;
-            font-size: 11px;
-            color: #FF6B6B;
-            padding: 4px;
-            background: #FFF3F3;
-            border-radius: 4px;
-            margin: 4px 12px;
-            display: none;
-        }
-        
-        .token-info {
-            text-align: center;
-            font-size: 11px;
-            color: #666;
-            padding: 4px;
-            background: #F0F0F0;
-            border-radius: 4px;
-            margin: 4px 12px;
-        }
-        
-        .provider-badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 9px;
-            margin-left: 8px;
-            background: #4A76A8;
-            color: white;
-        }
-        
         @keyframes fadeIn {
-            from { 
-                opacity: 0; 
-                transform: translateY(10px); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0); 
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         @keyframes typing {
-            0%, 60%, 100% { 
-                transform: translateY(0); 
-                opacity: 0.4;
-            }
-            30% { 
-                transform: translateY(-3px); 
-                opacity: 1;
-            }
-        }
-        
-        .welcome-message {
-            text-align: center;
-            color: #626D7A;
-            font-size: 12px;
-            margin: 8px 0;
-            padding: 4px;
-        }
-        
-        @media (max-width: 480px) {
-            body {
-                padding: 0;
-            }
-            
-            .container {
-                height: 100vh;
-                max-width: 100%;
-                border-radius: 0;
-            }
-            
-            .message {
-                max-width: 90%;
-            }
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-3px); opacity: 1; }
         }
     </style>
 </head>
@@ -267,24 +156,14 @@
     <div class="container">
         <div class="header">
             <h1>DeepSeek AI Assistant</h1>
-            <div class="status">Готов помочь</div>
-            <div class="online-dot"></div>
+            <div class="status">Умный демо-режим</div>
         </div>
         
         <div class="chat-container" id="chatMessages">
-            <div class="welcome-message">Сегодня</div>
             <div class="message bot-message">
                 👋 Привет! Я DeepSeek AI Assistant. Задавайте вопросы, и я постараюсь помочь вам наилучшим образом.
                 <div class="message-time">только что</div>
             </div>
-        </div>
-        
-        <div id="apiStatus" class="api-status">
-            ⚠️ Временные технические работы
-        </div>
-        
-        <div class="token-info" id="tokenInfo">
-            🔄 Улучшенный демо-режим | Для полного функционала нужен API ключ
         </div>
         
         <div class="input-container">
@@ -302,15 +181,8 @@
             const chatMessages = document.getElementById('chatMessages');
             const messageInput = document.getElementById('messageInput');
             const sendButton = document.getElementById('sendButton');
-            const apiStatus = document.getElementById('apiStatus');
-            const tokenInfo = document.getElementById('tokenInfo');
             
-            // Инициализация VK Bridge
-            if (typeof vkBridge !== 'undefined') {
-                vkBridge.send('VKWebAppInit').catch(console.error);
-            }
-            
-            function addMessage(text, isUser, provider = null) {
+            function addMessage(text, isUser) {
                 const messageDiv = document.createElement('div');
                 messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
                 
@@ -320,38 +192,13 @@
                     minute: '2-digit' 
                 });
                 
-                let providerBadge = '';
-                if (provider && !isUser) {
-                    let providerText = '';
-                    let badgeColor = '#4A76A8';
-                    
-                    switch(provider) {
-                        case 'together':
-                            providerText = 'Together AI';
-                            badgeColor = '#8B5CF6';
-                            break;
-                        case 'improved_demo':
-                            providerText = 'Умный демо';
-                            badgeColor = '#10B981';
-                            break;
-                        case 'deepseek':
-                            providerText = 'DeepSeek';
-                            badgeColor = '#3B82F6';
-                            break;
-                    }
-                    
-                    providerBadge = `<span class="provider-badge" style="background: ${badgeColor}">${providerText}</span>`;
-                }
-                
                 messageDiv.innerHTML = `
-                    ${text} ${providerBadge}
+                    ${text}
                     <div class="message-time">${timeString}</div>
                 `;
                 
                 chatMessages.appendChild(messageDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
-                
-                return messageDiv;
             }
             
             function showTypingIndicator() {
@@ -368,37 +215,23 @@
                 
                 chatMessages.appendChild(typingDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
-                
-                return typingDiv;
             }
             
             function removeTypingIndicator() {
                 const indicator = document.getElementById('typingIndicator');
-                if (indicator) {
-                    indicator.remove();
-                }
+                if (indicator) indicator.remove();
             }
             
             async function sendMessage() {
                 const message = messageInput.value.trim();
-                
                 if (!message) return;
                 
-                // Очищаем поле ввода
                 messageInput.value = '';
-                
-                // Добавляем сообщение пользователя
                 addMessage(message, true);
-                
-                // Показываем индикатор набора
                 showTypingIndicator();
-                
-                // Отключаем кнопку отправки
                 sendButton.disabled = true;
-                apiStatus.style.display = 'none';
                 
                 try {
-                    // Отправляем запрос к нашему API
                     const response = await fetch('/api/ask', {
                         method: 'POST',
                         headers: {
@@ -410,119 +243,26 @@
                         })
                     });
                     
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-                    }
+                    if (!response.ok) throw new Error('Ошибка API');
                     
                     const data = await response.json();
                     removeTypingIndicator();
-                    
-                    if (data.error) {
-                        addMessage(`❌ Ошибка: ${data.error}`, false);
-                        apiStatus.style.display = 'block';
-                        apiStatus.textContent = `⚠️ ${data.error}`;
-                    } else {
-                        addMessage(data.answer, false, data.provider);
-                        
-                        // Обновляем информацию о провайдере
-                        updateProviderInfo(data.provider);
-                    }
+                    addMessage(data.answer, false);
                     
                 } catch (error) {
-                    console.error('Error:', error);
                     removeTypingIndicator();
-                    
-                    // Используем локальную логику как запасной вариант
-                    const localAnswer = await generateLocalAnswer(message);
-                    addMessage(localAnswer, false, 'local_fallback');
-                    updateProviderInfo('local_fallback');
-                    
-                    apiStatus.style.display = 'block';
-                    apiStatus.textContent = '⚠️ Используется локальная логика';
-                    
+                    addMessage('Извините, произошла ошибка. Попробуйте еще раз.', false);
                 } finally {
                     sendButton.disabled = false;
                     messageInput.focus();
                 }
             }
             
-            function updateProviderInfo(provider) {
-                let infoText = '';
-                let infoColor = '#666';
-                let bgColor = '#F0F0F0';
-                
-                switch(provider) {
-                    case 'deepseek':
-                        infoText = '✅ DeepSeek API активен';
-                        infoColor = '#10B981';
-                        bgColor = '#F0F9F0';
-                        break;
-                    case 'together':
-                        infoText = '✅ Together AI активен';
-                        infoColor = '#8B5CF6';
-                        bgColor = '#F5F3FF';
-                        break;
-                    case 'improved_demo':
-                        infoText = '🔄 Улучшенный демо-режим';
-                        infoColor = '#F59E0B';
-                        bgColor = '#FFFBEB';
-                        break;
-                    case 'local_fallback':
-                        infoText = '⚠️ Локальная логика';
-                        infoColor = '#EF4444';
-                        bgColor = '#FEF2F2';
-                        break;
-                    default:
-                        infoText = '🔄 Обработка запроса';
-                }
-                
-                tokenInfo.textContent = infoText;
-                tokenInfo.style.color = infoColor;
-                tokenInfo.style.background = bgColor;
-            }
-            
-            // Локальная логика для запасного варианта
-            async function generateLocalAnswer(question) {
-                // Имитация обработки
-                await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 1200));
-                
-                const lowerQuestion = question.toLowerCase();
-                
-                // Простые ответы на частые вопросы
-                if (lowerQuestion.includes('как дела') || lowerQuestion.includes('как ты')) {
-                    return 'У меня всё отлично! 😊 Готов помогать вам с вопросами. А у вас как дела?';
-                }
-                
-                if (lowerQuestion.includes('спасибо') || lowerQuestion.includes('благодар')) {
-                    return 'Пожалуйста! 😊 Всегда рад помочь! Если есть еще вопросы - обращайтесь!';
-                }
-                
-                if (lowerQuestion.includes('пока') || lowerQuestion.includes('до свидан')) {
-                    return 'До свидания! 👋 Буду рад помочь вам снова, когда появится новый вопрос!';
-                }
-                
-                // Общий ответ
-                const answers = [
-                    `Интересный вопрос! "${question}" - это то, что действительно стоит обсудить. В обычном режиме я бы использовал DeepSeek AI для генерации точного ответа.`,
-                    `Спасибо за ваш запрос! По теме "${question}" можно рассказать много интересного. К сожалению, сейчас я работаю в ограниченном режиме.`,
-                    `Я получил ваш вопрос о "${question}". Это важная тема для рассмотрения! При восстановлении доступа к AI я смогу дать более детальный ответ.`
-                ];
-                
-                return answers[Math.floor(Math.random() * answers.length)];
-            }
-            
-            // Обработчики событий
             sendButton.addEventListener('click', sendMessage);
-            
             messageInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                }
+                if (e.key === 'Enter') sendMessage();
             });
             
-            // Автофокус на поле ввода
             messageInput.focus();
         });
     </script>
