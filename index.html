@@ -206,6 +206,16 @@
             margin: 4px 12px;
         }
         
+        .provider-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 9px;
+            margin-left: 8px;
+            background: #4A76A8;
+            color: white;
+        }
+        
         @keyframes fadeIn {
             from { 
                 opacity: 0; 
@@ -270,11 +280,11 @@
         </div>
         
         <div id="apiStatus" class="api-status">
-            ⚠️ Ошибка подключения к API
+            ⚠️ Временные технические работы
         </div>
         
         <div class="token-info" id="tokenInfo">
-            🔄 Используется реальное DeepSeek API
+            🔄 Улучшенный демо-режим | Для полного функционала нужен API ключ
         </div>
         
         <div class="input-container">
@@ -300,7 +310,7 @@
                 vkBridge.send('VKWebAppInit').catch(console.error);
             }
             
-            function addMessage(text, isUser) {
+            function addMessage(text, isUser, provider = null) {
                 const messageDiv = document.createElement('div');
                 messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
                 
@@ -310,8 +320,31 @@
                     minute: '2-digit' 
                 });
                 
+                let providerBadge = '';
+                if (provider && !isUser) {
+                    let providerText = '';
+                    let badgeColor = '#4A76A8';
+                    
+                    switch(provider) {
+                        case 'together':
+                            providerText = 'Together AI';
+                            badgeColor = '#8B5CF6';
+                            break;
+                        case 'improved_demo':
+                            providerText = 'Умный демо';
+                            badgeColor = '#10B981';
+                            break;
+                        case 'deepseek':
+                            providerText = 'DeepSeek';
+                            badgeColor = '#3B82F6';
+                            break;
+                    }
+                    
+                    providerBadge = `<span class="provider-badge" style="background: ${badgeColor}">${providerText}</span>`;
+                }
+                
                 messageDiv.innerHTML = `
-                    ${text}
+                    ${text} ${providerBadge}
                     <div class="message-time">${timeString}</div>
                 `;
                 
@@ -390,21 +423,93 @@
                         apiStatus.style.display = 'block';
                         apiStatus.textContent = `⚠️ ${data.error}`;
                     } else {
-                        addMessage(data.answer, false);
+                        addMessage(data.answer, false, data.provider);
+                        
+                        // Обновляем информацию о провайдере
+                        updateProviderInfo(data.provider);
                     }
                     
                 } catch (error) {
                     console.error('Error:', error);
                     removeTypingIndicator();
                     
-                    addMessage(`❌ Произошла ошибка при обработке запроса: ${error.message}`, false);
+                    // Используем локальную логику как запасной вариант
+                    const localAnswer = await generateLocalAnswer(message);
+                    addMessage(localAnswer, false, 'local_fallback');
+                    updateProviderInfo('local_fallback');
+                    
                     apiStatus.style.display = 'block';
-                    apiStatus.textContent = '⚠️ Ошибка подключения к API';
+                    apiStatus.textContent = '⚠️ Используется локальная логика';
                     
                 } finally {
                     sendButton.disabled = false;
                     messageInput.focus();
                 }
+            }
+            
+            function updateProviderInfo(provider) {
+                let infoText = '';
+                let infoColor = '#666';
+                let bgColor = '#F0F0F0';
+                
+                switch(provider) {
+                    case 'deepseek':
+                        infoText = '✅ DeepSeek API активен';
+                        infoColor = '#10B981';
+                        bgColor = '#F0F9F0';
+                        break;
+                    case 'together':
+                        infoText = '✅ Together AI активен';
+                        infoColor = '#8B5CF6';
+                        bgColor = '#F5F3FF';
+                        break;
+                    case 'improved_demo':
+                        infoText = '🔄 Улучшенный демо-режим';
+                        infoColor = '#F59E0B';
+                        bgColor = '#FFFBEB';
+                        break;
+                    case 'local_fallback':
+                        infoText = '⚠️ Локальная логика';
+                        infoColor = '#EF4444';
+                        bgColor = '#FEF2F2';
+                        break;
+                    default:
+                        infoText = '🔄 Обработка запроса';
+                }
+                
+                tokenInfo.textContent = infoText;
+                tokenInfo.style.color = infoColor;
+                tokenInfo.style.background = bgColor;
+            }
+            
+            // Локальная логика для запасного варианта
+            async function generateLocalAnswer(question) {
+                // Имитация обработки
+                await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 1200));
+                
+                const lowerQuestion = question.toLowerCase();
+                
+                // Простые ответы на частые вопросы
+                if (lowerQuestion.includes('как дела') || lowerQuestion.includes('как ты')) {
+                    return 'У меня всё отлично! 😊 Готов помогать вам с вопросами. А у вас как дела?';
+                }
+                
+                if (lowerQuestion.includes('спасибо') || lowerQuestion.includes('благодар')) {
+                    return 'Пожалуйста! 😊 Всегда рад помочь! Если есть еще вопросы - обращайтесь!';
+                }
+                
+                if (lowerQuestion.includes('пока') || lowerQuestion.includes('до свидан')) {
+                    return 'До свидания! 👋 Буду рад помочь вам снова, когда появится новый вопрос!';
+                }
+                
+                // Общий ответ
+                const answers = [
+                    `Интересный вопрос! "${question}" - это то, что действительно стоит обсудить. В обычном режиме я бы использовал DeepSeek AI для генерации точного ответа.`,
+                    `Спасибо за ваш запрос! По теме "${question}" можно рассказать много интересного. К сожалению, сейчас я работаю в ограниченном режиме.`,
+                    `Я получил ваш вопрос о "${question}". Это важная тема для рассмотрения! При восстановлении доступа к AI я смогу дать более детальный ответ.`
+                ];
+                
+                return answers[Math.floor(Math.random() * answers.length)];
             }
             
             // Обработчики событий
