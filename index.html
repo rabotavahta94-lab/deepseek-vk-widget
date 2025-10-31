@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeepSeek AI Assistant</title>
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -72,4 +73,165 @@
         .message-input {
             flex: 1;
             padding: 12px 16px;
-            border:
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+        }
+        .message-input:focus {
+            border-color: #667eea;
+        }
+        .send-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .send-button:hover {
+            opacity: 0.9;
+        }
+        .typing-indicator {
+            padding: 12px 16px;
+            color: #666;
+            font-style: italic;
+        }
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <h1>🤖 DeepSeek AI Assistant</h1>
+                <p>Ваш интеллектуальный помощник</p>
+            </div>
+            
+            <div id="chat" class="chat-container">
+                <div class="message bot-message">
+                    Привет! Я ваш AI-ассистент. Задайте мне вопрос!
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <input type="text" id="messageInput" class="message-input" 
+                       placeholder="Введите ваш вопрос..." maxlength="500">
+                <button onclick="sendMessage()" class="send-button">Отправить</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация VK Bridge
+        async function initializeApp() {
+            try {
+                // Проверяем, находимся ли мы в VK Mini Apps
+                if (typeof vkBridge !== 'undefined') {
+                    await vkBridge.send('VKWebAppInit', {});
+                    console.log('VK Mini App initialized successfully');
+                    
+                    // Получаем информацию о пользователе
+                    const userInfo = await vkBridge.send('VKWebAppGetUserInfo', {});
+                    console.log('User info:', userInfo);
+                    
+                    // Показываем приложение
+                    document.getElementById('app').style.display = 'block';
+                } else {
+                    // Если не в VK, все равно показываем приложение
+                    console.log('Running outside VK');
+                    document.getElementById('app').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Initialization error:', error);
+                // Показываем приложение даже при ошибке
+                document.getElementById('app').style.display = 'block';
+                
+                // Добавляем сообщение об ошибке в чат
+                const chat = document.getElementById('chat');
+                chat.innerHTML += `
+                    <div class="error-message">
+                        Приложение запущено в демо-режиме. В VK должно работать автоматически.
+                    </div>
+                `;
+            }
+        }
+
+        // Функции чата
+        const chat = document.getElementById('chat');
+        const messageInput = document.getElementById('messageInput');
+
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = isUser ? 'message user-message' : 'message bot-message';
+            messageDiv.textContent = text;
+            chat.appendChild(messageDiv);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function showTyping() {
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typing';
+            typingDiv.className = 'typing-indicator';
+            typingDiv.textContent = 'AI печатает...';
+            chat.appendChild(typingDiv);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typing');
+            if (typing) typing.remove();
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true);
+            messageInput.value = '';
+            
+            showTyping();
+
+            try {
+                // Имитация ответа AI (замените на реальный DeepSeek API)
+                setTimeout(() => {
+                    hideTyping();
+                    const responses = [
+                        "Это демо-версия виджета. Для полной функциональности подключите DeepSeek API.",
+                        "Я AI-помощник! В реальной версии я буду отвечать на ваши вопросы с помощью DeepSeek.",
+                        "Привет! Это тестовая версия чата. Настройте интеграцию с DeepSeek для умных ответов."
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage(randomResponse);
+                }, 1000);
+
+            } catch (error) {
+                hideTyping();
+                addMessage("Извините, произошла ошибка. Попробуйте еще раз.");
+                console.error('Error:', error);
+            }
+        }
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            
+            // Отправка по Enter
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendMessage();
+            });
+
+            // Фокус на поле ввода
+            messageInput.focus();
+        });
+    </script>
+</body>
+</html>.
