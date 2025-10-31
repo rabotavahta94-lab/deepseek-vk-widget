@@ -4,12 +4,24 @@
     {
       "src": "index.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "api/ask.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
+      "src": "/api/ask",
+      "dest": "/api/ask.js",
+      "methods": ["GET", "POST", "OPTIONS"]
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
