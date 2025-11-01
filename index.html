@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeepSeek AI Assistant</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <title>Уфа Работа Вахта - Чат-помощник</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💼</text></svg>">
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -14,7 +15,7 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #4A76A8 0%, #2A5885 100%);
+            background: linear-gradient(135deg, #07f 0%, #05f 100%);
             min-height: 100vh;
             padding: 20px;
             display: flex;
@@ -35,20 +36,60 @@
         }
         
         .header {
-            background: #4A76A8;
+            background: #07f;
             color: white;
             padding: 16px;
             text-align: center;
+            position: relative;
         }
         
         .header h1 {
             font-size: 18px;
             margin-bottom: 4px;
+            font-weight: 500;
         }
         
         .status {
             font-size: 13px;
             opacity: 0.9;
+        }
+        
+        .online-dot {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+        }
+        
+        .quick-actions {
+            padding: 12px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .quick-btn {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #07f;
+            border-radius: 16px;
+            font-size: 12px;
+            color: #07f;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .quick-btn:hover {
+            background: #07f;
+            color: white;
         }
         
         .chat-container {
@@ -73,11 +114,14 @@
         .user-message {
             align-self: flex-end;
             background: #EBF0F7;
+            border-bottom-right-radius: 4px;
         }
         
         .bot-message {
             align-self: flex-start;
             background: white;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         
         .message-time {
@@ -100,12 +144,19 @@
             padding: 10px 14px;
             border: 1px solid #E1E3E6;
             border-radius: 20px;
+            outline: none;
             font-size: 14px;
             background: #F2F3F5;
+            transition: all 0.3s ease;
+        }
+        
+        .message-input:focus {
+            border-color: #07f;
+            background: white;
         }
         
         .send-button {
-            background: #4A76A8;
+            background: #07f;
             color: white;
             border: none;
             border-radius: 50%;
@@ -115,6 +166,17 @@
             justify-content: center;
             align-items: center;
             cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .send-button:hover {
+            background: #05f;
+        }
+        
+        .send-button:disabled {
+            background: #A0B0C0;
+            cursor: not-allowed;
         }
         
         .typing-indicator {
@@ -123,6 +185,8 @@
             background: white;
             padding: 10px 12px;
             border-radius: 12px;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         
         .typing-dots {
@@ -141,33 +205,130 @@
         .typing-dot:nth-child(1) { animation-delay: -0.32s; }
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         
+        .system-info {
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            padding: 4px;
+            background: #F0F0F0;
+            border-radius: 4px;
+            margin: 4px 12px;
+        }
+        
+        .job-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+        }
+        
+        .job-title {
+            font-weight: bold;
+            color: #07f;
+            margin-bottom: 4px;
+        }
+        
+        .job-salary {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: 1px solid #07f;
+            border-radius: 6px;
+            background: white;
+            color: #07f;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background: #07f;
+            color: white;
+        }
+        
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { 
+                opacity: 0; 
+                transform: translateY(10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
         }
         
         @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-            30% { transform: translateY(-3px); opacity: 1; }
+            0%, 60%, 100% { 
+                transform: translateY(0); 
+                opacity: 0.4;
+            }
+            30% { 
+                transform: translateY(-3px); 
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 0;
+            }
+            
+            .container {
+                height: 100vh;
+                max-width: 100%;
+                border-radius: 0;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>DeepSeek AI Assistant</h1>
-            <div class="status">Умный демо-режим</div>
+            <h1>Уфа Работа Вахта Башкирия</h1>
+            <div class="status">Чат-помощник по вакансиям</div>
+            <div class="online-dot"></div>
+        </div>
+        
+        <div class="quick-actions">
+            <button class="quick-btn" onclick="sendQuickAction('вакансии')">🔍 Вакансии</button>
+            <button class="quick-btn" onclick="sendQuickAction('оставить заявку')">📝 Заявка</button>
+            <button class="quick-btn" onclick="sendQuickAction('условия работы')">📋 Условия</button>
+            <button class="quick-btn" onclick="sendQuickAction('юмор')">😄 Юмор</button>
         </div>
         
         <div class="chat-container" id="chatMessages">
             <div class="message bot-message">
-                👋 Привет! Я DeepSeek AI Assistant. Задавайте вопросы, и я постараюсь помочь вам наилучшим образом.
+                👋 Добро пожаловать в чат-помощник сообщества "Уфа Работа Вахта Башкирия"! 
+                <br><br>
+                💼 Я помогу вам с:
+                • Поиском вакансий
+                • Оформлением заявок  
+                • Консультацией по условиям
+                • Поддержкой и юмором
                 <div class="message-time">только что</div>
             </div>
         </div>
         
+        <div class="system-info" id="systemInfo">
+            💬 12.1K подписчиков • Отвечаем за 15 минут
+        </div>
+        
         <div class="input-container">
-            <input type="text" class="message-input" id="messageInput" placeholder="Введите ваш вопрос..." autocomplete="off">
+            <input type="text" class="message-input" id="messageInput" placeholder="Задайте вопрос о вакансиях..." autocomplete="off">
             <button class="send-button" id="sendButton">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="white"/>
@@ -177,12 +338,191 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const chatMessages = document.getElementById('chatMessages');
-            const messageInput = document.getElementById('messageInput');
-            const sendButton = document.getElementById('sendButton');
+        class CommunityChatManager {
+            constructor() {
+                this.chatMessages = document.getElementById('chatMessages');
+                this.messageInput = document.getElementById('messageInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.systemInfo = document.getElementById('systemInfo');
+                
+                // Данные сообщества
+                this.communityData = {
+                    name: "Уфа Работа Вахта Башкирия",
+                    subscribers: "12.1K",
+                    responseTime: "15 минут",
+                    city: "Уфа, Советский район"
+                };
+                
+                // База вакансий
+                this.jobDatabase = this.initializeJobDatabase();
+                this.userApplications = new Map();
+                
+                this.init();
+            }
             
-            function addMessage(text, isUser) {
+            init() {
+                this.setupEventListeners();
+                this.messageInput.focus();
+                this.loadCommunityData();
+            }
+            
+            setupEventListeners() {
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+            }
+            
+            loadCommunityData() {
+                // Обновляем информацию о сообществе
+                this.systemInfo.textContent = 
+                    `💬 ${this.communityData.subscribers} подписчиков • Отвечаем за ${this.communityData.responseTime}`;
+            }
+            
+            initializeJobDatabase() {
+                return {
+                    'нефтегаз': [
+                        {
+                            title: "Оператор технологических установок",
+                            salary: "90 000 - 120 000 ₽",
+                            location: "Нефтегазовое месторождение, Вахта 30/30",
+                            requirements: "Опыт работы от 1 года, знание техники безопасности",
+                            contacts: "📞 8-927-123-45-67"
+                        },
+                        {
+                            title: "Электромонтер",
+                            salary: "85 000 - 110 000 ₽", 
+                            location: "Уфа, вахта 15/15",
+                            requirements: "3-я группа электробезопасности, опыт от 2 лет",
+                            contacts: "📞 8-987-654-32-10"
+                        }
+                    ],
+                    'строительство': [
+                        {
+                            title: "Строитель-монтажник",
+                            salary: "75 000 - 95 000 ₽",
+                            location: "Строительные объекты по РБ",
+                            requirements: "Разряд не ниже 3-го, физическая выносливость",
+                            contacts: "📞 8-937-333-44-55"
+                        }
+                    ],
+                    'логистика': [
+                        {
+                            title: "Водитель категории С",
+                            salary: "80 000 - 100 000 ₽",
+                            location: "Междугородние перевозки",
+                            requirements: "Категория С, стаж от 3 лет",
+                            contacts: "📞 8-917-444-55-66"
+                        }
+                    ]
+                };
+            }
+            
+            async sendMessage() {
+                const message = this.messageInput.value.trim();
+                if (!message) return;
+                
+                this.messageInput.value = '';
+                this.addMessage(message, true);
+                this.showTypingIndicator();
+                this.sendButton.disabled = true;
+                
+                try {
+                    const response = await fetch('/api/ask', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            question: message,
+                            community: this.communityData,
+                            jobs: this.jobDatabase,
+                            timestamp: new Date().toISOString()
+                        })
+                    });
+                    
+                    if (!response.ok) throw new Error('Ошибка API');
+                    
+                    const data = await response.json();
+                    this.removeTypingIndicator();
+                    
+                    if (data.error) {
+                        this.addMessage(`❌ ${data.error}`, false);
+                    } else {
+                        this.displayResponse(data.answer, data.type);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    this.removeTypingIndicator();
+                    const localAnswer = this.generateLocalResponse(message);
+                    this.displayResponse(localAnswer.answer, localAnswer.type);
+                } finally {
+                    this.sendButton.disabled = false;
+                    this.messageInput.focus();
+                }
+            }
+            
+            displayResponse(answer, type = 'text') {
+                if (type === 'jobs') {
+                    this.showJobVacancies(answer);
+                } else if (type === 'application') {
+                    this.startApplicationProcess(answer);
+                } else {
+                    this.addMessage(answer, false);
+                }
+            }
+            
+            showJobVacancies(jobs) {
+                let message = "🏢 Актуальные вакансии:\n\n";
+                
+                jobs.forEach((job, index) => {
+                    message += `<div class="job-card">
+                        <div class="job-title">${job.title}</div>
+                        <div class="job-salary">${job.salary}</div>
+                        <div>📍 ${job.location}</div>
+                        <div>📋 ${job.requirements}</div>
+                        <div>${job.contacts}</div>
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="chatManager.applyForJob(${index})">📨 Откликнуться</button>
+                            <button class="action-btn" onclick="chatManager.showJobDetails(${index})">ℹ️ Подробнее</button>
+                        </div>
+                    </div>`;
+                });
+                
+                message += "\n💼 Выберите вакансию или уточните критерии поиска!";
+                this.addMessage(message, false);
+            }
+            
+            startApplicationProcess(step) {
+                this.addMessage(step, false);
+            }
+            
+            applyForJob(jobIndex) {
+                const job = this.findJobByIndex(jobIndex);
+                const applicationMessage = 
+                    `📝 Отклик на вакансию: ${job.title}\n\n` +
+                    `Для оформления заявки ответьте на вопросы:\n` +
+                    `1. Ваше ФИО:\n` +
+                    `2. Возраст:\n` + 
+                    `3. Опыт работы:\n` +
+                    `4. Контактный телефон:\n\n` +
+                    `Отправьте ответы в одном сообщении!`;
+                
+                this.addMessage(applicationMessage, false);
+            }
+            
+            findJobByIndex(index) {
+                // Упрощенный поиск вакансии
+                const allJobs = Object.values(this.jobDatabase).flat();
+                return allJobs[index] || allJobs[0];
+            }
+            
+            addMessage(text, isUser) {
                 const messageDiv = document.createElement('div');
                 messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
                 
@@ -197,11 +537,11 @@
                     <div class="message-time">${timeString}</div>
                 `;
                 
-                chatMessages.appendChild(messageDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                this.chatMessages.appendChild(messageDiv);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
             }
             
-            function showTypingIndicator() {
+            showTypingIndicator() {
                 const typingDiv = document.createElement('div');
                 typingDiv.className = 'typing-indicator';
                 typingDiv.id = 'typingIndicator';
@@ -213,57 +553,72 @@
                     </div>
                 `;
                 
-                chatMessages.appendChild(typingDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                this.chatMessages.appendChild(typingDiv);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
             }
             
-            function removeTypingIndicator() {
+            removeTypingIndicator() {
                 const indicator = document.getElementById('typingIndicator');
                 if (indicator) indicator.remove();
             }
             
-            async function sendMessage() {
-                const message = messageInput.value.trim();
-                if (!message) return;
+            generateLocalResponse(question) {
+                const lowerQuestion = question.toLowerCase();
                 
-                messageInput.value = '';
-                addMessage(message, true);
-                showTypingIndicator();
-                sendButton.disabled = true;
-                
-                try {
-                    const response = await fetch('/api/ask', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ 
-                            question: message,
-                            timestamp: new Date().toISOString()
-                        })
-                    });
-                    
-                    if (!response.ok) throw new Error('Ошибка API');
-                    
-                    const data = await response.json();
-                    removeTypingIndicator();
-                    addMessage(data.answer, false);
-                    
-                } catch (error) {
-                    removeTypingIndicator();
-                    addMessage('Извините, произошла ошибка. Попробуйте еще раз.', false);
-                } finally {
-                    sendButton.disabled = false;
-                    messageInput.focus();
+                // Поиск вакансий
+                if (/(ваканс|работа|ищу работу|трудоустройств)/i.test(question)) {
+                    const jobs = Object.values(this.jobDatabase).flat();
+                    return { answer: jobs, type: 'jobs' };
                 }
+                
+                // Оставить заявку
+                if (/(заявк|анкет|отклик|резюме)/i.test(question)) {
+                    return { 
+                        answer: "📝 Готов помочь с оформлением заявки! На какую вакансию вы хотите откликнуться?", 
+                        type: 'application' 
+                    };
+                }
+                
+                // Условия работы
+                if (/(услови|график|зарплат|оплат)/i.test(question)) {
+                    return { 
+                        answer: "📋 Стандартные условия вахты:\n\n" +
+                        "• Вахта 15/15 или 30/30\n" +
+                        "• Зарплата от 75 000 ₽\n" + 
+                        "• Официальное трудоустройство\n" +
+                        "• Проживание и питание за счет компании\n" +
+                        "• Проезд до места работы оплачивается",
+                        type: 'text'
+                    };
+                }
+                
+                // Юмор
+                if (/(юмор|шутк|прикол|смех)/i.test(question)) {
+                    const jokes = [
+                        "Почему вахтовики не играют в прятки? Их всегда находят по графику! 😄",
+                        "Вахтовик приехал домой, а дома его не ждали. Теперь он вахтует дома! 🏠",
+                        "Что говорит вахтовик, когда его будят? 'Я уже встал!' ⏰"
+                    ];
+                    return { answer: jokes[Math.floor(Math.random() * jokes.length)], type: 'text' };
+                }
+                
+                // Общий ответ
+                return { 
+                    answer: "💼 Чем могу помочь? Могу показать вакансии, помочь с заявкой или ответить на вопросы о работе вахтой в Уфе и Башкирии!",
+                    type: 'text' 
+                };
             }
-            
-            sendButton.addEventListener('click', sendMessage);
-            messageInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') sendMessage();
-            });
-            
-            messageInput.focus();
+        }
+
+        // Глобальные функции для кнопок
+        function sendQuickAction(action) {
+            window.chatManager.messageInput.value = action;
+            window.chatManager.sendMessage();
+        }
+
+        // Инициализация чата
+        document.addEventListener('DOMContentLoaded', () => {
+            window.chatManager = new CommunityChatManager();
         });
     </script>
 </body>
