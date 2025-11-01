@@ -1,0 +1,16 @@
+{
+  "name": "ufa-rabota-vakhta",
+  "version": "2.0.0",
+  "description": "Чат-виджет для сообщества Уфа Работа Вахта Башкирия",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "@vercel/node": "^1.15.0"
+  }
+}
