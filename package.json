@@ -4,13 +4,7 @@
   "description": "AI Assistant for VK community using DeepSeek",
   "main": "index.html",
   "scripts": {
-    "dev": "serve .",
-    "build": "echo 'No build step needed'"
-  },
-  "dependencies": {
-    "vk-bridge": "^3.6.0"
-  },
-  "devDependencies": {
-    "serve": "^14.0.0"
+    "dev": "python3 -m http.server 3000",
+    "start": "python3 -m http.server 3000"
   }
 }
