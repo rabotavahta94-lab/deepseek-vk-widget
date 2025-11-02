@@ -1,16 +1,16 @@
 {
-  "name": "ufa-rabota-vakhta",
-  "version": "2.0.0",
-  "description": "Чат-виджет для сообщества Уфа Работа Вахта Башкирия",
+  "name": "deepseek-vk-widget",
+  "version": "1.0.0",
+  "description": "AI Assistant for VK community using DeepSeek",
   "main": "index.html",
   "scripts": {
-    "dev": "vercel dev",
-    "deploy": "vercel --prod"
+    "dev": "serve .",
+    "build": "echo 'No build step needed'"
   },
   "dependencies": {
-    "node-fetch": "^2.6.7"
+    "vk-bridge": "^3.6.0"
   },
   "devDependencies": {
-    "@vercel/node": "^1.15.0"
+    "serve": "^14.0.0"
   }
 }
