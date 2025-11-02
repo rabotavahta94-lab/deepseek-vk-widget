@@ -2,26 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "index.html",
+      "src": "package.json",
       "use": "@vercel/static"
-    },
-    {
-      "src": "api/ask.js",
-      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/ask",
-      "dest": "/api/ask.js",
-      "methods": ["GET", "POST", "OPTIONS"]
-    },
-    {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/$1"
     }
-  ],
-  "env": {
-    "DEEPSEEK_API_KEY": "@deepseek_api_key"
-  }
+  ]
 }
