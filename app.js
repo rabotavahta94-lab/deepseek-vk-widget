@@ -1,150 +1,185 @@
-// Инициализация VK Bridge
-vkBridge.send('VKWebAppInit');
+class DeepSeekVKApp {
+    constructor() {
+        this.init();
+        this.bindEvents();
+        this.chatHistory = [];
+    }
 
-// Элементы DOM
-const chat = document.getElementById('chat');
-const userInput = document.getElementById('user-input');
-const sendBtn = document.getElementById('send-btn');
+    init() {
+        this.vkBridge = window.vkBridge;
+        this.messagesContainer = document.getElementById('messages');
+        this.userInput = document.getElementById('user-input');
+        this.sendButton = document.getElementById('send-button');
+        this.mobileMenu = document.getElementById('mobile-menu');
+        
+        this.initVKBridge();
+        this.loadChatHistory();
+    }
 
-// Конфигурация API
-const API_CONFIG = {
-    url: 'https://api.deepseek.com/v1/chat/completions',
-    // ЗАМЕНИТЕ НА ВАШ РЕАЛЬНЫЙ API КЛЮЧ
-    apiKey: 'sk-your-deepseek-api-key-here'
-};
+    async initVKBridge() {
+        if (this.vkBridge) {
+            try {
+                await this.vkBridge.send('VKWebAppInit');
+                console.log('VK Bridge инициализирован');
+                
+                // Получаем информацию о пользователе
+                const user = await this.vkBridge.send('VKWebAppGetUserInfo');
+                this.userId = user.id;
+                
+            } catch (error) {
+                console.error('Ошибка инициализации VK Bridge:', error);
+            }
+        }
+    }
 
-// Функция добавления сообщения
-function addMessage(text, isUser = false) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
-    messageDiv.textContent = text;
-    chat.appendChild(messageDiv);
-    chat.scrollTop = chat.scrollHeight;
-}
-
-// Функция показа загрузки
-function showLoading() {
-    const loadingDiv = document.createElement('div');
-    loadingDiv.className = 'loading';
-    loadingDiv.id = 'loading';
-    loadingDiv.textContent = 'DeepSeek думает...';
-    chat.appendChild(loadingDiv);
-    chat.scrollTop = chat.scrollHeight;
-}
-
-// Функция скрытия загрузки
-function hideLoading() {
-    const loading = document.getElementById('loading');
-    if (loading) loading.remove();
-}
-
-// Функция показа ошибки
-function showError(message) {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error';
-    errorDiv.textContent = message;
-    chat.appendChild(errorDiv);
-    chat.scrollTop = chat.scrollHeight;
-}
-
-// Функция отправки сообщения к DeepSeek API
-async function sendToDeepSeek(message) {
-    try {
-        const response = await fetch(API_CONFIG.url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_CONFIG.apiKey}`
-            },
-            body: JSON.stringify({
-                model: 'deepseek-chat',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'Ты полезный AI-ассистент для сообщества ВКонтакте. Отвечай на русском языке кратко и понятно. Будь дружелюбным и помогай пользователям.'
-                    },
-                    {
-                        role: 'user',
-                        content: message
-                    }
-                ],
-                max_tokens: 500,
-                temperature: 0.7,
-                stream: false
-            })
+    bindEvents() {
+        // Отправка сообщения
+        this.sendButton.addEventListener('click', () => this.sendMessage());
+        this.userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.sendMessage();
+            }
         });
 
-        if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
+        // Автоматическое изменение высоты textarea
+        this.userInput.addEventListener('input', this.autoResizeTextarea.bind(this));
+
+        // Мобильное меню
+        document.getElementById('menu-toggle').addEventListener('click', () => this.toggleMobileMenu());
+        document.querySelector('.menu-close').addEventListener('click', () => this.toggleMobileMenu());
+
+        // Кнопки функций
+        document.querySelectorAll('.feature-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.handleFeatureClick(e));
+        });
+
+        // Новый чат
+        document.getElementById('new-chat').addEventListener('click', () => this.newChat());
+        document.getElementById('new-chat-mobile').addEventListener('click', () => this.newChat());
+    }
+
+    autoResizeTextarea() {
+        this.userInput.style.height = 'auto';
+        this.userInput.style.height = Math.min(this.userInput.scrollHeight, 120) + 'px';
+    }
+
+    async sendMessage() {
+        const message = this.userInput.value.trim();
+        if (!message) return;
+
+        // Очищаем поле ввода
+        this.userInput.value = '';
+        this.autoResizeTextarea();
+
+        // Добавляем сообщение пользователя
+        this.addMessage(message, 'user');
+
+        // Показываем индикатор набора
+        this.showTypingIndicator();
+
+        try {
+            // Отправляем запрос к DeepSeek API
+            const response = await window.deepseekAPI.sendMessage(message, this.chatHistory);
+            
+            // Убираем индикатор набора
+            this.hideTypingIndicator();
+            
+            // Добавляем ответ бота
+            this.addMessage(response, 'bot');
+            
+            // Сохраняем в историю
+            this.saveToHistory(message, response);
+            
+        } catch (error) {
+            this.hideTypingIndicator();
+            this.addMessage('Извините, произошла ошибка. Пожалуйста, попробуйте еще раз.', 'bot');
+            console.error('Ошибка:', error);
         }
+    }
 
-        const data = await response.json();
-        return data.choices[0].message.content;
+    addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        messageDiv.textContent = text;
+        
+        this.messagesContainer.appendChild(messageDiv);
+        this.scrollToBottom();
+    }
 
-    } catch (error) {
-        console.error('DeepSeek API error:', error);
-        throw new Error('Не удалось подключиться к AI. Проверьте API ключ.');
+    showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.id = 'typing-indicator';
+        typingDiv.className = 'message bot-message typing-indicator';
+        typingDiv.innerHTML = 'DeepSeek печатает<span class="typing-dots"></span>';
+        
+        this.messagesContainer.appendChild(typingDiv);
+        this.scrollToBottom();
+    }
+
+    hideTypingIndicator() {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+
+    scrollToBottom() {
+        this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+    }
+
+    handleFeatureClick(e) {
+        const feature = e.target.dataset.feature;
+        const presetMessages = {
+            text: 'Напиши подробный текст на тему:',
+            code: 'Напиши код для:',
+            translate: 'Переведи на английский:'
+        };
+
+        this.userInput.value = presetMessages[feature] + ' ';
+        this.userInput.focus();
+    }
+
+    toggleMobileMenu() {
+        this.mobileMenu.classList.toggle('active');
+    }
+
+    newChat() {
+        this.messagesContainer.innerHTML = '';
+        this.chatHistory = [];
+        this.saveChatHistory();
+        this.toggleMobileMenu(); // Закрываем меню на мобильных
+    }
+
+    saveToHistory(userMessage, botMessage) {
+        this.chatHistory.push({
+            user: userMessage,
+            bot: botMessage,
+            timestamp: new Date().toISOString()
+        });
+        this.saveChatHistory();
+    }
+
+    saveChatHistory() {
+        localStorage.setItem('deepseek_chat_history', JSON.stringify(this.chatHistory));
+    }
+
+    loadChatHistory() {
+        const saved = localStorage.getItem('deepseek_chat_history');
+        if (saved) {
+            this.chatHistory = JSON.parse(saved);
+            
+            // Восстанавливаем последние N сообщений
+            const recentMessages = this.chatHistory.slice(-10);
+            recentMessages.forEach(chat => {
+                this.addMessage(chat.user, 'user');
+                this.addMessage(chat.bot, 'bot');
+            });
+        }
     }
 }
 
-// Основная функция обработки сообщения
-async function handleSendMessage() {
-    const message = userInput.value.trim();
-    if (!message) return;
-
-    // Добавляем сообщение пользователя
-    addMessage(message, true);
-    userInput.value = '';
-    userInput.disabled = true;
-    sendBtn.disabled = true;
-    
-    // Показываем индикатор загрузки
-    showLoading();
-
-    try {
-        const response = await sendToDeepSeek(message);
-        hideLoading();
-        addMessage(response, false);
-    } catch (error) {
-        hideLoading();
-        showError(error.message);
-        console.error('Error:', error);
-    } finally {
-        userInput.disabled = false;
-        sendBtn.disabled = false;
-        userInput.focus();
-    }
-}
-
-// Обработчики событий
-sendBtn.addEventListener('click', handleSendMessage);
-userInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        handleSendMessage();
-    }
-});
-
-// Инициализация VK
-vkBridge.subscribe((e) => {
-    if (e.detail.type === 'VKWebAppUpdateConfig') {
-        const scheme = e.detail.data.scheme;
-        // Адаптация под темную тему ВК
-        if (scheme === 'dark') {
-            document.body.style.background = '#191919';
-        }
-    }
-});
-
-// Фокус на поле ввода при загрузке
+// Инициализация приложения после загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
-    userInput.focus();
+    window.deepSeekApp = new DeepSeekVKApp();
 });
-
-// Обработка ошибок VK Bridge
-vkBridge.send('VKWebAppGetUserInfo')
-    .then(user => {
-        console.log('User info:', user);
-    })
-    .catch(error => {
-        console.log('Not in VK environment:', error);
-    });
