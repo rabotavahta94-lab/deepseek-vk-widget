@@ -3,147 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeepSeek AI Assistant</title>
+    <title>DeepSeek AI Assistant - VK Mini App</title>
+    <meta name="vk:image" content="https://your-app.vercel.app/images/logo.png">
+    <meta property="og:title" content="DeepSeek AI Assistant">
+    <meta property="og:description" content="AI-помощник для вашего сообщества ВКонтакте">
     <link rel="stylesheet" href="styles/common.css">
-    <link rel="stylesheet" href="styles/desktop.css" media="(min-width: 768px)">
-    <link rel="stylesheet" href="styles/mobile.css" media="(max-width: 767px)">
-    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    <link rel="stylesheet" href="styles/vk.css">
+    <script src="https://unpkg.com/@vkontakte/vk-bridge@6.0.14/dist/browser.min.js"></script>
 </head>
 <body>
-    <div id="app">
-        <!-- Десктопный хедер -->
-        <header class="desktop-header">
-            <div class="logo">
-                <h1>DeepSeek AI Assistant</h1>
-                <span class="subtitle">Ваш умный помощник</span>
-            </div>
-            <nav class="nav-menu">
-                <button id="new-chat" class="nav-btn">
-                    <span class="icon">🆕</span>
-                    Новый чат
-                </button>
-                <button id="history" class="nav-btn">
-                    <span class="icon">📚</span>
-                    История
-                </button>
-                <button id="settings" class="nav-btn">
-                    <span class="icon">⚙️</span>
-                    Настройки
-                </button>
-            </nav>
-        </header>
-
-        <!-- Мобильный хедер -->
-        <header class="mobile-header">
-            <div class="mobile-nav">
-                <button id="menu-toggle" class="menu-btn">☰</button>
-                <div class="mobile-title">
-                    <h1>DeepSeek AI</h1>
-                    <span class="status">Online</span>
+    <div id="vk-app">
+        <!-- VK Header -->
+        <div class="vk-header">
+            <div class="vk-header-content">
+                <div class="app-info">
+                    <div class="app-icon">🤖</div>
+                    <div class="app-text">
+                        <h1>DeepSeek AI Assistant</h1>
+                        <span class="app-status">Готов помочь</span>
+                    </div>
                 </div>
-                <button id="new-chat-mobile" class="new-chat-btn">+</button>
+                <button class="vk-menu-btn" id="vk-menu">⋯</button>
             </div>
-        </header>
+        </div>
 
-        <!-- Основной контент -->
-        <main class="chat-container">
-            <div class="welcome-message" id="welcome-message">
-                <div class="welcome-content">
-                    <div class="ai-avatar">🤖</div>
-                    <h2>Добро пожаловать в DeepSeek AI!</h2>
-                    <p>Я ваш AI-помощник. Задавайте вопросы, пишите код, переводите тексты или просто общайтесь!</p>
-                    <div class="quick-actions">
-                        <button class="quick-btn" data-prompt="Напиши пример кода на JavaScript">💻 Пример кода</button>
-                        <button class="quick-btn" data-prompt="Переведи на английский: Привет, как дела?">🌐 Переводчик</button>
-                        <button class="quick-btn" data-prompt="Объясни концепцию искусственного интеллекта">📚 Объясни тему</button>
+        <!-- Chat Area -->
+        <div class="vk-chat-container">
+            <div class="chat-messages" id="messages">
+                <div class="welcome-message">
+                    <div class="welcome-avatar">🤖</div>
+                    <div class="welcome-text">
+                        <h3>Привет! Я DeepSeek AI</h3>
+                        <p>Задавайте вопросы, и я постараюсь помочь вам наилучшим образом.</p>
                     </div>
                 </div>
             </div>
-            
-            <div class="chat-messages" id="messages">
-                <!-- Сообщения будут здесь -->
-            </div>
-            
-            <div class="input-area">
-                <div class="input-container">
+
+            <!-- Input Area -->
+            <div class="vk-input-area">
+                <div class="input-wrapper">
                     <textarea 
                         id="user-input" 
-                        placeholder="Задайте ваш вопрос..." 
+                        placeholder="Введите ваш вопрос..."
                         rows="1"
                         maxlength="2000"
                     ></textarea>
-                    <button id="send-button" class="send-btn">
-                        <span class="send-icon">➤</span>
+                    <button id="send-button" class="vk-send-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
                     </button>
                 </div>
-                <div class="features">
-                    <button class="feature-btn" data-feature="text">
-                        <span class="feature-icon">📝</span>
-                        Текст
+                
+                <div class="quick-actions">
+                    <button class="quick-action" data-prompt="Напиши пример кода на Python">
+                        <span>💻 Код</span>
                     </button>
-                    <button class="feature-btn" data-feature="code">
-                        <span class="feature-icon">💻</span>
-                        Код
+                    <button class="quick-action" data-prompt="Переведи на английский: ">
+                        <span>🌐 Перевод</span>
                     </button>
-                    <button class="feature-btn" data-feature="translate">
-                        <span class="feature-icon">🌐</span>
-                        Перевод
+                    <button class="quick-action" data-prompt="Объясни простыми словами: ">
+                        <span>📚 Объясни</span>
                     </button>
-                </div>
-                <div class="char-counter">
-                    <span id="char-count">0</span>/2000
                 </div>
             </div>
-        </main>
+        </div>
 
-        <!-- Мобильное меню -->
-        <div class="mobile-menu" id="mobile-menu">
-            <div class="menu-header">
-                <h3>Меню</h3>
-                <button class="menu-close">×</button>
-            </div>
+        <!-- VK Menu -->
+        <div class="vk-menu" id="vk-menu-panel">
             <div class="menu-content">
                 <button class="menu-item" data-action="new-chat">
-                    <span class="menu-icon">🆕</span>
+                    <span class="icon">🆕</span>
                     Новый чат
                 </button>
                 <button class="menu-item" data-action="history">
-                    <span class="menu-icon">📚</span>
-                    История чатов
+                    <span class="icon">📚</span>
+                    История
                 </button>
-                <button class="menu-item" data-action="settings">
-                    <span class="menu-icon">⚙️</span>
-                    Настройки
-                </button>
-                <button class="menu-item" data-action="help">
-                    <span class="menu-icon">❓</span>
-                    Помощь
+                <button class="menu-item" data-action="share">
+                    <span class="icon">↗️</span>
+                    Поделиться
                 </button>
                 <button class="menu-item" data-action="about">
-                    <span class="menu-icon">ℹ️</span>
+                    <span class="icon">ℹ️</span>
                     О приложении
                 </button>
             </div>
         </div>
-
-        <!-- Нижняя панель для мобильных -->
-        <nav class="bottom-nav" id="bottom-nav">
-            <button class="nav-item" data-action="new-chat">
-                <span class="nav-icon">🆕</span>
-                <span class="nav-text">Новый чат</span>
-            </button>
-            <button class="nav-item" data-action="history">
-                <span class="nav-icon">📚</span>
-                <span class="nav-text">История</span>
-            </button>
-            <button class="nav-item" data-action="menu">
-                <span class="nav-icon">☰</span>
-                <span class="nav-text">Меню</span>
-            </button>
-        </nav>
     </div>
 
-    <script src="js/vk-bridge.js"></script>
+    <script src="js/vk-integration.js"></script>
     <script src="js/deepseek-api.js"></script>
     <script src="js/app.js"></script>
 </body>
