@@ -6,15 +6,15 @@
             "use": "@vercel/node"
         },
         {
-            "src": "*.html",
+            "src": "**/*.html",
             "use": "@vercel/static"
         },
         {
-            "src": "*.css",
+            "src": "**/*.css",
             "use": "@vercel/static"
         },
         {
-            "src": "*.js",
+            "src": "**/*.js",
             "use": "@vercel/static"
         }
     ],
@@ -24,8 +24,20 @@
             "dest": "/server.js"
         },
         {
+            "src": "/health",
+            "dest": "/server.js"
+        },
+        {
+            "src": "/vk-auth",
+            "dest": "/server.js"
+        },
+        {
             "src": "/(.*)",
             "dest": "/index.html"
         }
-    ]
+    ],
+    "env": {
+        "DEEPSEEK_API_KEY": "@deepseek-api-key",
+        "VK_APP_ID": "@vk-app-id"
+    }
 }
