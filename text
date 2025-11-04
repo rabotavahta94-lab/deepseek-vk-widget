@@ -1,0 +1,13 @@
+deepseek-vk-app/
+├── index.html
+├── mobile.html
+├── styles/
+│   ├── desktop.css
+│   ├── mobile.css
+│   └── common.css
+├── js/
+│   ├── app.js
+│   ├── vk-bridge.js
+│   └── deepseek-api.js
+├── manifest.json
+└── package.json
