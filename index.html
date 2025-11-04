@@ -15,25 +15,51 @@
         <header class="desktop-header">
             <div class="logo">
                 <h1>DeepSeek AI Assistant</h1>
+                <span class="subtitle">Ваш умный помощник</span>
             </div>
             <nav class="nav-menu">
-                <button id="new-chat">Новый чат</button>
-                <button id="history">История</button>
-                <button id="settings">Настройки</button>
+                <button id="new-chat" class="nav-btn">
+                    <span class="icon">🆕</span>
+                    Новый чат
+                </button>
+                <button id="history" class="nav-btn">
+                    <span class="icon">📚</span>
+                    История
+                </button>
+                <button id="settings" class="nav-btn">
+                    <span class="icon">⚙️</span>
+                    Настройки
+                </button>
             </nav>
         </header>
 
         <!-- Мобильный хедер -->
         <header class="mobile-header">
             <div class="mobile-nav">
-                <button id="menu-toggle">☰</button>
-                <h1>DeepSeek AI</h1>
-                <button id="new-chat-mobile">+</button>
+                <button id="menu-toggle" class="menu-btn">☰</button>
+                <div class="mobile-title">
+                    <h1>DeepSeek AI</h1>
+                    <span class="status">Online</span>
+                </div>
+                <button id="new-chat-mobile" class="new-chat-btn">+</button>
             </div>
         </header>
 
         <!-- Основной контент -->
         <main class="chat-container">
+            <div class="welcome-message" id="welcome-message">
+                <div class="welcome-content">
+                    <div class="ai-avatar">🤖</div>
+                    <h2>Добро пожаловать в DeepSeek AI!</h2>
+                    <p>Я ваш AI-помощник. Задавайте вопросы, пишите код, переводите тексты или просто общайтесь!</p>
+                    <div class="quick-actions">
+                        <button class="quick-btn" data-prompt="Напиши пример кода на JavaScript">💻 Пример кода</button>
+                        <button class="quick-btn" data-prompt="Переведи на английский: Привет, как дела?">🌐 Переводчик</button>
+                        <button class="quick-btn" data-prompt="Объясни концепцию искусственного интеллекта">📚 Объясни тему</button>
+                    </div>
+                </div>
+            </div>
+            
             <div class="chat-messages" id="messages">
                 <!-- Сообщения будут здесь -->
             </div>
@@ -44,27 +70,77 @@
                         id="user-input" 
                         placeholder="Задайте ваш вопрос..." 
                         rows="1"
+                        maxlength="2000"
                     ></textarea>
-                    <button id="send-button">➤</button>
+                    <button id="send-button" class="send-btn">
+                        <span class="send-icon">➤</span>
+                    </button>
                 </div>
                 <div class="features">
-                    <button class="feature-btn" data-feature="text">📝 Текст</button>
-                    <button class="feature-btn" data-feature="code">💻 Код</button>
-                    <button class="feature-btn" data-feature="translate">🌐 Перевод</button>
+                    <button class="feature-btn" data-feature="text">
+                        <span class="feature-icon">📝</span>
+                        Текст
+                    </button>
+                    <button class="feature-btn" data-feature="code">
+                        <span class="feature-icon">💻</span>
+                        Код
+                    </button>
+                    <button class="feature-btn" data-feature="translate">
+                        <span class="feature-icon">🌐</span>
+                        Перевод
+                    </button>
+                </div>
+                <div class="char-counter">
+                    <span id="char-count">0</span>/2000
                 </div>
             </div>
         </main>
 
         <!-- Мобильное меню -->
         <div class="mobile-menu" id="mobile-menu">
-            <button class="menu-close">×</button>
+            <div class="menu-header">
+                <h3>Меню</h3>
+                <button class="menu-close">×</button>
+            </div>
             <div class="menu-content">
-                <button class="menu-item">Новый чат</button>
-                <button class="menu-item">История</button>
-                <button class="menu-item">Настройки</button>
-                <button class="menu-item">Помощь</button>
+                <button class="menu-item" data-action="new-chat">
+                    <span class="menu-icon">🆕</span>
+                    Новый чат
+                </button>
+                <button class="menu-item" data-action="history">
+                    <span class="menu-icon">📚</span>
+                    История чатов
+                </button>
+                <button class="menu-item" data-action="settings">
+                    <span class="menu-icon">⚙️</span>
+                    Настройки
+                </button>
+                <button class="menu-item" data-action="help">
+                    <span class="menu-icon">❓</span>
+                    Помощь
+                </button>
+                <button class="menu-item" data-action="about">
+                    <span class="menu-icon">ℹ️</span>
+                    О приложении
+                </button>
             </div>
         </div>
+
+        <!-- Нижняя панель для мобильных -->
+        <nav class="bottom-nav" id="bottom-nav">
+            <button class="nav-item" data-action="new-chat">
+                <span class="nav-icon">🆕</span>
+                <span class="nav-text">Новый чат</span>
+            </button>
+            <button class="nav-item" data-action="history">
+                <span class="nav-icon">📚</span>
+                <span class="nav-text">История</span>
+            </button>
+            <button class="nav-item" data-action="menu">
+                <span class="nav-icon">☰</span>
+                <span class="nav-text">Меню</span>
+            </button>
+        </nav>
     </div>
 
     <script src="js/vk-bridge.js"></script>
