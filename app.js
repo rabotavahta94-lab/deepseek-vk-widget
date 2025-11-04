@@ -3,17 +3,22 @@ class DeepSeekVKApp {
         this.init();
         this.bindEvents();
         this.chatHistory = [];
+        this.isMobile = window.innerWidth <= 767;
     }
 
     init() {
         this.vkBridge = window.vkBridge;
         this.messagesContainer = document.getElementById('messages');
+        this.welcomeMessage = document.getElementById('welcome-message');
         this.userInput = document.getElementById('user-input');
         this.sendButton = document.getElementById('send-button');
         this.mobileMenu = document.getElementById('mobile-menu');
+        this.bottomNav = document.getElementById('bottom-nav');
+        this.charCounter = document.getElementById('char-count');
         
         this.initVKBridge();
         this.loadChatHistory();
+        this.setupCharacterCounter();
     }
 
     async initVKBridge() {
@@ -22,12 +27,11 @@ class DeepSeekVKApp {
                 await this.vkBridge.send('VKWebAppInit');
                 console.log('VK Bridge инициализирован');
                 
-                // Получаем информацию о пользователе
                 const user = await this.vkBridge.send('VKWebAppGetUserInfo');
                 this.userId = user.id;
                 
             } catch (error) {
-                console.error('Ошибка инициализации VK Bridge:', error);
+                console.log('VK Bridge не доступен, работаем в standalone режиме');
             }
         }
     }
@@ -54,9 +58,50 @@ class DeepSeekVKApp {
             btn.addEventListener('click', (e) => this.handleFeatureClick(e));
         });
 
+        // Быстрые действия
+        document.querySelectorAll('.quick-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const prompt = e.target.dataset.prompt;
+                this.userInput.value = prompt;
+                this.autoResizeTextarea();
+                this.userInput.focus();
+            });
+        });
+
         // Новый чат
         document.getElementById('new-chat').addEventListener('click', () => this.newChat());
         document.getElementById('new-chat-mobile').addEventListener('click', () => this.newChat());
+
+        // Нижняя навигация
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const action = e.currentTarget.dataset.action;
+                this.handleNavAction(action);
+            });
+        });
+
+        // Пункты меню
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const action = e.currentTarget.dataset.action;
+                this.handleMenuAction(action);
+            });
+        });
+    }
+
+    setupCharacterCounter() {
+        this.userInput.addEventListener('input', () => {
+            const count = this.userInput.value.length;
+            this.charCounter.textContent = count;
+            
+            if (count > 1800) {
+                this.charCounter.style.color = '#dc3545';
+            } else if (count > 1500) {
+                this.charCounter.style.color = '#ffc107';
+            } else {
+                this.charCounter.style.color = '#666';
+            }
+        });
     }
 
     autoResizeTextarea() {
@@ -71,6 +116,11 @@ class DeepSeekVKApp {
         // Очищаем поле ввода
         this.userInput.value = '';
         this.autoResizeTextarea();
+        this.charCounter.textContent = '0';
+        this.charCounter.style.color = '#666';
+
+        // Скрываем welcome сообщение
+        this.hideWelcomeMessage();
 
         // Добавляем сообщение пользователя
         this.addMessage(message, 'user');
@@ -78,30 +128,37 @@ class DeepSeekVKApp {
         // Показываем индикатор набора
         this.showTypingIndicator();
 
+        // Блокируем кнопку отправки
+        this.sendButton.disabled = true;
+
         try {
-            // Отправляем запрос к DeepSeek API
             const response = await window.deepseekAPI.sendMessage(message, this.chatHistory);
-            
-            // Убираем индикатор набора
             this.hideTypingIndicator();
-            
-            // Добавляем ответ бота
             this.addMessage(response, 'bot');
-            
-            // Сохраняем в историю
             this.saveToHistory(message, response);
             
         } catch (error) {
             this.hideTypingIndicator();
-            this.addMessage('Извините, произошла ошибка. Пожалуйста, попробуйте еще раз.', 'bot');
+            this.addMessage('Извините, произошла ошибка. Пожалуйста, проверьте подключение к интернету и попробуйте еще раз.', 'bot');
             console.error('Ошибка:', error);
+        } finally {
+            this.sendButton.disabled = false;
+        }
+    }
+
+    hideWelcomeMessage() {
+        if (this.welcomeMessage) {
+            this.welcomeMessage.style.display = 'none';
         }
     }
 
     addMessage(text, sender) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${sender}-message`;
-        messageDiv.textContent = text;
+        
+        // Форматирование текста (простейшее)
+        const formattedText = text.replace(/\n/g, '<br>');
+        messageDiv.innerHTML = formattedText;
         
         this.messagesContainer.appendChild(messageDiv);
         this.scrollToBottom();
@@ -129,15 +186,51 @@ class DeepSeekVKApp {
     }
 
     handleFeatureClick(e) {
-        const feature = e.target.dataset.feature;
+        const feature = e.target.closest('.feature-btn').dataset.feature;
         const presetMessages = {
-            text: 'Напиши подробный текст на тему:',
-            code: 'Напиши код для:',
-            translate: 'Переведи на английский:'
+            text: 'Напиши подробный текст на тему: ',
+            code: 'Напиши код для: ',
+            translate: 'Переведи на английский: '
         };
 
-        this.userInput.value = presetMessages[feature] + ' ';
+        this.userInput.value = presetMessages[feature];
         this.userInput.focus();
+        this.autoResizeTextarea();
+    }
+
+    handleNavAction(action) {
+        switch (action) {
+            case 'new-chat':
+                this.newChat();
+                break;
+            case 'history':
+                this.showHistory();
+                break;
+            case 'menu':
+                this.toggleMobileMenu();
+                break;
+        }
+    }
+
+    handleMenuAction(action) {
+        switch (action) {
+            case 'new-chat':
+                this.newChat();
+                break;
+            case 'history':
+                this.showHistory();
+                break;
+            case 'settings':
+                this.showSettings();
+                break;
+            case 'help':
+                this.showHelp();
+                break;
+            case 'about':
+                this.showAbout();
+                break;
+        }
+        this.toggleMobileMenu();
     }
 
     toggleMobileMenu() {
@@ -145,10 +238,30 @@ class DeepSeekVKApp {
     }
 
     newChat() {
-        this.messagesContainer.innerHTML = '';
-        this.chatHistory = [];
-        this.saveChatHistory();
-        this.toggleMobileMenu(); // Закрываем меню на мобильных
+        if (this.chatHistory.length > 0) {
+            if (confirm('Вы уверены, что хотите начать новый чат? Текущая история будет очищена.')) {
+                this.messagesContainer.innerHTML = '';
+                this.chatHistory = [];
+                this.saveChatHistory();
+                this.welcomeMessage.style.display = 'block';
+            }
+        }
+    }
+
+    showHistory() {
+        alert('Функция истории чатов будет реализована в следующем обновлении!');
+    }
+
+    showSettings() {
+        alert('Настройки будут доступны в следующем обновлении!');
+    }
+
+    showHelp() {
+        alert('Помощь: Просто введите ваш вопрос в поле ввода и нажмите отправить. Используйте кнопки для быстрого доступа к функциям.');
+    }
+
+    showAbout() {
+        alert('DeepSeek AI Assistant\nВерсия 1.0\n\nAI-помощник для сообществ ВКонтакте на базе DeepSeek AI');
     }
 
     saveToHistory(userMessage, botMessage) {
@@ -157,6 +270,12 @@ class DeepSeekVKApp {
             bot: botMessage,
             timestamp: new Date().toISOString()
         });
+        
+        // Ограничиваем историю последними 50 сообщениями
+        if (this.chatHistory.length > 50) {
+            this.chatHistory = this.chatHistory.slice(-50);
+        }
+        
         this.saveChatHistory();
     }
 
@@ -169,17 +288,20 @@ class DeepSeekVKApp {
         if (saved) {
             this.chatHistory = JSON.parse(saved);
             
-            // Восстанавливаем последние N сообщений
-            const recentMessages = this.chatHistory.slice(-10);
-            recentMessages.forEach(chat => {
-                this.addMessage(chat.user, 'user');
-                this.addMessage(chat.bot, 'bot');
-            });
+            // Восстанавливаем последние сообщения
+            const recentMessages = this.chatHistory.slice(-20);
+            if (recentMessages.length > 0) {
+                this.hideWelcomeMessage();
+                recentMessages.forEach(chat => {
+                    this.addMessage(chat.user, 'user');
+                    this.addMessage(chat.bot, 'bot');
+                });
+            }
         }
     }
 }
 
-// Инициализация приложения после загрузки DOM
+// Инициализация приложения
 document.addEventListener('DOMContentLoaded', () => {
     window.deepSeekApp = new DeepSeekVKApp();
 });
