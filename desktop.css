@@ -11,9 +11,19 @@
     display: none;
 }
 
+.bottom-nav {
+    display: none;
+}
+
 .logo h1 {
     color: #333;
     font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.logo .subtitle {
+    color: #666;
+    font-size: 14px;
 }
 
 .nav-menu {
@@ -21,17 +31,21 @@
     gap: 15px;
 }
 
-.nav-menu button {
-    padding: 8px 16px;
+.nav-btn {
+    padding: 10px 16px;
     border: 1px solid #007bff;
     background: white;
     color: #007bff;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
 }
 
-.nav-menu button:hover {
+.nav-btn:hover {
     background: #007bff;
     color: white;
 }
@@ -42,4 +56,8 @@
 
 .features {
     justify-content: flex-start;
+}
+
+.message {
+    max-width: 70%;
 }
