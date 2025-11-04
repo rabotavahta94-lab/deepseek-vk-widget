@@ -1,22 +1,21 @@
 {
-    "name": "deepseek-vk-app",
+    "name": "deepseek-vk-miniapp",
     "version": "1.0.0",
-    "description": "AI Assistant для ВКонтакте на базе DeepSeek",
-    "main": "app.js",
+    "description": "DeepSeek AI Assistant для ВКонтакте Мини-Приложений",
+    "main": "server.js",
     "type": "module",
     "scripts": {
         "start": "node server.js",
-        "build": "npm run build:desktop && npm run build:mobile",
-        "build:desktop": "cp index.html dist/",
-        "build:mobile": "cp mobile.html dist/mobile.html",
-        "dev": "node server.js"
+        "dev": "node server.js",
+        "build": "echo 'No build step needed for static app'",
+        "vercel-build": "echo 'No build step needed'"
     },
     "dependencies": {
         "express": "^4.18.2",
         "cors": "^2.8.5",
         "node-fetch": "^3.3.2"
     },
-    "keywords": ["vk", "deepseek", "ai", "chatbot"],
+    "keywords": ["vk", "miniapp", "deepseek", "ai", "chatbot"],
     "author": "Your Name",
     "license": "MIT"
 }
