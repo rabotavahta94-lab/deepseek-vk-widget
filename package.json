@@ -1,14 +1,19 @@
 {
-  "name": "deepseek-vk-widget",
-  "version": "1.0.0",
-  "description": "AI Assistant for VK community using DeepSeek",
-  "main": "index.html",
-  "scripts": {
-    "dev": "python3 -m http.server 3000",
-    "start": "python3 -m http.server 3000",
-    "build": "echo 'No build step needed for static site'"
-  },
-  "keywords": ["vk", "miniapp", "deepseek", "ai"],
-  "author": "Your Name",
-  "license": "MIT"
+    "name": "deepseek-vk-app",
+    "version": "1.0.0",
+    "description": "AI Assistant для ВКонтакте на базе DeepSeek",
+    "main": "app.js",
+    "scripts": {
+        "start": "node server.js",
+        "build": "npm run build:desktop && npm run build:mobile",
+        "build:desktop": "cp index.html dist/",
+        "build:mobile": "cp mobile.html dist/mobile.html"
+    },
+    "dependencies": {
+        "express": "^4.18.2",
+        "cors": "^2.8.5"
+    },
+    "keywords": ["vk", "deepseek", "ai", "chatbot"],
+    "author": "Your Name",
+    "license": "MIT"
 }
